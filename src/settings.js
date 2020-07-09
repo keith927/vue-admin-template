@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: 'Vue Admin Template',
+  title: '金盛热力数据融合分析平台',
 
   /**
    * @type {boolean} true | false
