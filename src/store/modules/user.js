@@ -34,8 +34,12 @@ const actions = {
     return new Promise((resolve, reject) => {
       login({ username: username.trim(), password: password }).then(response => {
         const { data } = response
-        commit('SET_TOKEN', data.token)
-        setToken(data.token)
+        commit('SET_TOKEN', data.authorize)
+        commit('SET_NAME', username.trim())
+        commit('SET_AVATAR', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
+
+        setToken(data.authorize)
+
         resolve()
       }).catch(error => {
         reject(error)
