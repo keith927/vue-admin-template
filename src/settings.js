@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: '金盛热力数据融合分析平台',
+  title: '金盛热力数据分析系统',
 
   /**
    * @type {boolean} true | false
