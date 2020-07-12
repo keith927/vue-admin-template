@@ -1,7 +1,7 @@
 <template>
   <el-row :gutter="40" class="panel-group">
     <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="fetchData()">
+      <div class="card-panel" @click="fetchData('heatNum')">
         <div class="card-panel-icon-wrapper icon-power-plant-cur-num">
           <svg-icon icon-class="power-plant" class-name="card-panel-icon" />
         </div>
@@ -14,7 +14,7 @@
       </div>
     </el-col>
     <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="fetchData()">
+      <div class="card-panel" @click="fetchData('powerPlantHeatUsage')">
         <div class="card-panel-icon-wrapper icon-water-temp">
           <svg-icon icon-class="water-temp" class-name="card-panel-icon" />
         </div>
@@ -27,9 +27,9 @@
       </div>
     </el-col>
     <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="fetchData()">
-        <div class="card-panel-icon-wrapper icon-heat-meter">
-          <svg-icon icon-class="heat-meter" class-name="card-panel-icon" />
+      <div class="card-panel" @click="fetchData('heatExchangeHeatUsage')">
+        <div class="card-panel-icon-wrapper icon-heat-num">
+          <svg-icon icon-class="heat-num" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
@@ -40,7 +40,7 @@
       </div>
     </el-col>
     <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="fetchData()">
+      <div class="card-panel" @click="fetchData('heatExchangeHeatUsage')">
         <div class="card-panel-icon-wrapper icon-heat-exchange">
           <svg-icon icon-class="heat-exchange" class-name="card-panel-icon" />
         </div>
@@ -72,10 +72,11 @@ export default {
     this.fetchData()
   },
   methods: {
-    fetchData() {
+    fetchData(type) {
+      this.$emit('handleSetLineChartData', type)
       getPowerPlantCurHeatNum().then(response => {
         const { dcheatnum, dcgrow, hrzgrow, temp } = response.data
-        this.powerPlatnInfo = { curHeatNum: dcheatnum, todayHeatNum: dcgrow, todayHeatExcHeatNum: hrzgrow, temp: temp }
+        this.powerPlatnInfo = { curHeatNum: parseInt(dcheatnum), todayHeatNum: parseInt(dcgrow), todayHeatExcHeatNum: parseInt(hrzgrow), temp: parseInt(temp) }
       })
     }
   }
@@ -114,7 +115,7 @@ export default {
         background: #f4516c;
       }
 
-      .icon-heat-meter {
+      .icon-heat-num {
         background: #36a3f7;
       }
 
@@ -131,7 +132,7 @@ export default {
       color: #f4516c;
     }
 
-    .icon-heat-meter {
+    .icon-heat-num {
       color: #36a3f7;
     }
 

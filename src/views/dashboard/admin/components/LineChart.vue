@@ -61,10 +61,14 @@ export default {
       this.chart = echarts.init(this.$el, 'macarons')
       this.setOptions(this.chartData)
     },
-    setOptions({ expectedData, actualData } = {}) {
+    setOptions(chartData) {
+      if (!chartData) {
+        return
+      }
+
       this.chart.setOption({
         xAxis: {
-          data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          data: chartData.xAxis[0],
           boundaryGap: false,
           axisTick: {
             show: false
@@ -84,16 +88,30 @@ export default {
           },
           padding: [5, 10]
         },
-        yAxis: {
-          axisTick: {
-            show: false
+        yAxis: [
+          {
+            axisTick: {
+              show: false
+            },
+            min: chartData.serialRange[0][0],
+            max: chartData.serialRange[0][1],
+            interval: (chartData.serialRange[0][1] - chartData.serialRange[0][0]) / 5
+          },
+          {
+            axisTick: {
+              show: false
+            },
+            min: chartData.serialRange[1][0],
+            max: chartData.serialRange[1][1],
+            interval: (chartData.serialRange[1][1] - chartData.serialRange[1][0]) / 5
           }
-        },
+        ],
         legend: {
-          data: ['expected', 'actual']
+          data: [chartData.serialName[0], chartData.serialName[1]]
         },
         series: [{
-          name: 'expected', itemStyle: {
+          name: chartData.serialName[0],
+          itemStyle: {
             normal: {
               color: '#FF005A',
               lineStyle: {
@@ -104,14 +122,13 @@ export default {
           },
           smooth: true,
           type: 'line',
-          data: expectedData,
+          yAxisIndex: chartData.serialIndex[0],
+          data: chartData.serial[0],
           animationDuration: 2800,
           animationEasing: 'cubicInOut'
         },
         {
-          name: 'actual',
-          smooth: true,
-          type: 'line',
+          name: chartData.serialName[1],
           itemStyle: {
             normal: {
               color: '#3888fa',
@@ -124,7 +141,10 @@ export default {
               }
             }
           },
-          data: actualData,
+          smooth: true,
+          type: 'line',
+          yAxisIndex: chartData.serialIndex[1],
+          data: chartData.serial[1],
           animationDuration: 2800,
           animationEasing: 'quadraticOut'
         }]

@@ -4,7 +4,7 @@
 
     <panel-group @handleSetLineChartData="handleSetLineChartData" />
 
-    <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
+    <el-row v-if="lineChartData" style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
       <line-chart :chart-data="lineChartData" />
     </el-row>
 
@@ -50,25 +50,7 @@ import BarChart from './components/BarChart'
 import TransactionTable from './components/TransactionTable'
 import TodoList from './components/TodoList'
 import BoxCard from './components/BoxCard'
-
-const lineChartData = {
-  newVisitis: {
-    expectedData: [100, 120, 161, 134, 105, 160, 165],
-    actualData: [120, 82, 91, 154, 162, 140, 145]
-  },
-  messages: {
-    expectedData: [200, 192, 120, 144, 160, 130, 140],
-    actualData: [180, 160, 151, 106, 145, 150, 130]
-  },
-  purchases: {
-    expectedData: [80, 100, 121, 104, 105, 90, 100],
-    actualData: [120, 90, 100, 138, 142, 130, 130]
-  },
-  shoppings: {
-    expectedData: [130, 140, 141, 142, 145, 150, 160],
-    actualData: [120, 82, 91, 154, 162, 140, 130]
-  }
-}
+import { getPowerPlantHeatNumHis } from '@/api/powerPlantInfo.js'
 
 export default {
   name: 'DashboardAdmin',
@@ -85,12 +67,78 @@ export default {
   },
   data() {
     return {
-      lineChartData: lineChartData.newVisitis
+      HeatNumHis: null,
+      lineChartData: null
     }
+  },
+  created() {
+    this.fetchData()
   },
   methods: {
     handleSetLineChartData(type) {
-      this.lineChartData = lineChartData[type]
+      this.lineChartData = this.HeatNumHis ? this.HeatNumHis[type] : null
+    },
+    fetchData() {
+      getPowerPlantHeatNumHis().then(response => {
+        console.log(response)
+
+        var times = []
+        var powerPlantHeatNum = []
+        var powerPlantHeatUsage = []
+        var heatExchangeHeatUsage = []
+        var temp = []
+
+        response.data.forEach(element => {
+          times.push(new Date(element.currenttime + 28800000).toJSON().substr(11, 2) + ':00')
+          powerPlantHeatNum.push(parseInt(element.dcheatnum))
+          powerPlantHeatUsage.push(parseInt(element.dcgrow))
+          heatExchangeHeatUsage.push(parseInt(element.hrzgrow))
+          temp.push(element.temp)
+        })
+
+        var tempRange = [Math.min(...temp), Math.max(...temp)]
+        var powerPlantHeatNumRange = [Math.min(...powerPlantHeatNum), Math.max(...powerPlantHeatNum)]
+        var powerPlantHeatUsageRange = [Math.min(...powerPlantHeatUsage), Math.max(...powerPlantHeatUsage)]
+        var heatExchangeHeatUsageRange = [Math.min(...heatExchangeHeatUsage), Math.max(...heatExchangeHeatUsage)]
+
+        // 范围整形
+        tempRange[0] = Math.floor(tempRange[0] / 5) * 5
+        tempRange[1] = 5 + tempRange[0] + Math.ceil((tempRange[1] - tempRange[0]) / 5) * 5
+        powerPlantHeatNumRange[0] = Math.floor(powerPlantHeatNumRange[0] / 5) * 5
+        powerPlantHeatNumRange[1] = 5 + powerPlantHeatNumRange[0] + Math.ceil((powerPlantHeatNumRange[1] - powerPlantHeatNumRange[0]) / 5) * 5
+        powerPlantHeatUsageRange[0] = Math.floor(powerPlantHeatUsageRange[0] / 5) * 5
+        powerPlantHeatUsageRange[1] = 5 + powerPlantHeatUsageRange[0] + Math.ceil((powerPlantHeatUsageRange[1] - powerPlantHeatUsageRange[0]) / 5) * 5
+        heatExchangeHeatUsageRange[0] = Math.floor(heatExchangeHeatUsageRange[0] / 5) * 5
+        heatExchangeHeatUsageRange[1] = 5 + heatExchangeHeatUsageRange[0] + Math.ceil((heatExchangeHeatUsageRange[1] - heatExchangeHeatUsageRange[0]) / 5) * 5
+
+        this.HeatNumHis = {
+          heatNum: {
+            serial: [powerPlantHeatNum, temp],
+            serialRange: [powerPlantHeatNumRange, tempRange],
+            serialIndex: [0, 1],
+            serialName: ['电厂热量', '温度'],
+            xAxis: [times]
+          },
+
+          powerPlantHeatUsage: {
+            serial: [powerPlantHeatUsage, temp],
+            serialRange: [powerPlantHeatUsageRange, tempRange],
+            serialIndex: [0, 1],
+            serialName: ['电厂用量', '温度'],
+            xAxis: [times]
+          },
+
+          heatExchangeHeatUsage: {
+            serial: [powerPlantHeatUsage, heatExchangeHeatUsage],
+            serialRange: [powerPlantHeatUsageRange, heatExchangeHeatUsageRange],
+            serialIndex: [0, 1],
+            serialName: ['电厂用量', '换热站用量'],
+            xAxis: [times]
+          }
+        }
+
+        this.lineChartData = this.HeatNumHis['heatNum']
+      })
     }
   }
 }
