@@ -1,54 +1,54 @@
 <template>
   <el-row :gutter="40" class="panel-group">
     <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('newVisitis')">
-        <div class="card-panel-icon-wrapper icon-people">
-          <svg-icon icon-class="peoples" class-name="card-panel-icon" />
+      <div class="card-panel" @click="fetchData()">
+        <div class="card-panel-icon-wrapper icon-power-plant-cur-num">
+          <svg-icon icon-class="power-plant" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            New Visits
+            电厂实时读数
           </div>
-          <count-to :start-val="0" :end-val="102400" :duration="2600" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="powerPlatnInfo.curHeatNum" :duration="2600" class="card-panel-num" />
         </div>
       </div>
     </el-col>
     <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('messages')">
-        <div class="card-panel-icon-wrapper icon-message">
-          <svg-icon icon-class="message" class-name="card-panel-icon" />
+      <div class="card-panel" @click="fetchData()">
+        <div class="card-panel-icon-wrapper icon-water-temp">
+          <svg-icon icon-class="water-temp" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            Messages
+            电厂出水温度
           </div>
-          <count-to :start-val="0" :end-val="81212" :duration="3000" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="powerPlatnInfo.temp" :duration="1000" class="card-panel-num" />
         </div>
       </div>
     </el-col>
     <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('purchases')">
-        <div class="card-panel-icon-wrapper icon-money">
-          <svg-icon icon-class="money" class-name="card-panel-icon" />
+      <div class="card-panel" @click="fetchData()">
+        <div class="card-panel-icon-wrapper icon-heat-meter">
+          <svg-icon icon-class="heat-meter" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            Purchases
+            电厂今日用量
           </div>
-          <count-to :start-val="0" :end-val="9280" :duration="3200" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="powerPlatnInfo.todayHeatNum" :duration="2200" class="card-panel-num" />
         </div>
       </div>
     </el-col>
     <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('shoppings')">
-        <div class="card-panel-icon-wrapper icon-shopping">
-          <svg-icon icon-class="shopping" class-name="card-panel-icon" />
+      <div class="card-panel" @click="fetchData()">
+        <div class="card-panel-icon-wrapper icon-heat-exchange">
+          <svg-icon icon-class="heat-exchange" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            Shoppings
+            换热站今日用量
           </div>
-          <count-to :start-val="0" :end-val="13600" :duration="3600" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="powerPlatnInfo.todayHeatExcHeatNum" :duration="2000" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -57,14 +57,26 @@
 
 <script>
 import CountTo from 'vue-count-to'
+import { getPowerPlantCurHeatNum } from '@/api/powerPlantInfo.js'
 
 export default {
   components: {
     CountTo
   },
+  data() {
+    return {
+      powerPlatnInfo: { curHeatNum: 0, todayHeatNum: 0, todayHeatExcHeatNum: 0, temp: 0 }
+    }
+  },
+  created() {
+    this.fetchData()
+  },
   methods: {
-    handleSetLineChartData(type) {
-      this.$emit('handleSetLineChartData', type)
+    fetchData() {
+      getPowerPlantCurHeatNum().then(response => {
+        const { dcheatnum, dcgrow, hrzgrow, temp } = response.data
+        this.powerPlatnInfo = { curHeatNum: dcheatnum, todayHeatNum: dcgrow, todayHeatExcHeatNum: hrzgrow, temp: temp }
+      })
     }
   }
 }
@@ -94,36 +106,36 @@ export default {
         color: #fff;
       }
 
-      .icon-people {
+      .icon-power-plant-cur-num {
         background: #40c9c6;
       }
 
-      .icon-message {
-        background: #36a3f7;
-      }
-
-      .icon-money {
+      .icon-water-temp {
         background: #f4516c;
       }
 
-      .icon-shopping {
+      .icon-heat-meter {
+        background: #36a3f7;
+      }
+
+      .icon-heat-exchange {
         background: #34bfa3
       }
     }
 
-    .icon-people {
+    .icon-power-plant-cur-num {
       color: #40c9c6;
     }
 
-    .icon-message {
-      color: #36a3f7;
-    }
-
-    .icon-money {
+    .icon-water-temp {
       color: #f4516c;
     }
 
-    .icon-shopping {
+    .icon-heat-meter {
+      color: #36a3f7;
+    }
+
+    .icon-heat-exchange {
       color: #34bfa3
     }
 
