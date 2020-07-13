@@ -93,36 +93,40 @@ export default {
             axisTick: {
               show: false
             },
-            min: chartData.serialRange[0][0],
-            max: chartData.serialRange[0][1],
-            interval: (chartData.serialRange[0][1] - chartData.serialRange[0][0]) / 5
+            min: chartData.yAxisRange[0][0],
+            max: chartData.yAxisRange[0][1],
+            interval: (chartData.yAxisRange[0][1] - chartData.yAxisRange[0][0]) / 5
           },
           {
             axisTick: {
               show: false
             },
-            min: chartData.serialRange[1][0],
-            max: chartData.serialRange[1][1],
-            interval: (chartData.serialRange[1][1] - chartData.serialRange[1][0]) / 5
+            min: chartData.yAxisRange[1][0],
+            max: chartData.yAxisRange[1][1],
+            interval: (chartData.yAxisRange[1][1] - chartData.yAxisRange[1][0]) / 5
           }
         ],
         legend: {
-          data: [chartData.serialName[0], chartData.serialName[1]]
+          data: [chartData.serialName[0], chartData.serialName[1], chartData.serialName[2]]
         },
+
         series: [{
           name: chartData.serialName[0],
           itemStyle: {
             normal: {
-              color: '#FF005A',
+              color: '#f4516c',
               lineStyle: {
-                color: '#FF005A',
+                color: '#f4516c',
                 width: 2
+              },
+              areaStyle: {
+                color: '#f4516c'
               }
             }
           },
           smooth: true,
           type: 'line',
-          yAxisIndex: chartData.serialIndex[0],
+          yAxisIndex: chartData.serialAxisIndex[0],
           data: chartData.serial[0],
           animationDuration: 2800,
           animationEasing: 'cubicInOut'
@@ -131,22 +135,37 @@ export default {
           name: chartData.serialName[1],
           itemStyle: {
             normal: {
-              color: '#3888fa',
+              color: '#36a3f7',
               lineStyle: {
-                color: '#3888fa',
+                color: '#36a3f7',
                 width: 2
-              },
-              areaStyle: {
-                color: '#f3f8ff'
               }
             }
           },
           smooth: true,
           type: 'line',
-          yAxisIndex: chartData.serialIndex[1],
+          yAxisIndex: chartData.serialAxisIndex[1],
           data: chartData.serial[1],
           animationDuration: 2800,
           animationEasing: 'quadraticOut'
+        },
+        {
+          name: chartData.serialName[2],
+          itemStyle: {
+            normal: {
+              color: '#34bfa3',
+              lineStyle: {
+                color: '#34bfa3',
+                width: 2
+              }
+            }
+          },
+          smooth: true,
+          type: 'line',
+          yAxisIndex: chartData.serialAxisIndex[2],
+          data: chartData.serial[2],
+          animationDuration: 2800,
+          animationEasing: 'cubicInOut'
         }]
       })
     }

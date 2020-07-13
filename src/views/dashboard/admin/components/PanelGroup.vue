@@ -22,7 +22,7 @@
           <div class="card-panel-text">
             电厂出水温度
           </div>
-          <count-to :start-val="0" :end-val="powerPlatnInfo.temp" :duration="1000" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="powerPlatnInfo.supplyTemp" :duration="1000" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -75,8 +75,8 @@ export default {
     fetchData(type) {
       this.$emit('handleSetLineChartData', type)
       getPowerPlantCurHeatNum().then(response => {
-        const { dcheatnum, dcgrow, hrzgrow, temp } = response.data
-        this.powerPlatnInfo = { curHeatNum: parseInt(dcheatnum), todayHeatNum: parseInt(dcgrow), todayHeatExcHeatNum: parseInt(hrzgrow), temp: parseInt(temp) }
+        const { dcheatnum, dcgrow, hrzgrow, dc_Supplytemp } = response.data
+        this.powerPlatnInfo = { curHeatNum: parseInt(dcheatnum), todayHeatNum: parseInt(dcgrow), todayHeatExcHeatNum: parseInt(hrzgrow), supplyTemp: Math.round(dc_Supplytemp) }
       })
     }
   }

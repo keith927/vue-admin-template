@@ -1,39 +1,66 @@
 <template>
-  <el-table :data="list" style="width: 100%;padding-top: 15px;">
-    <el-table-column label="Order_No" min-width="200">
+  <el-table
+    :data="list"
+    style="width: 100%;padding-top: 15px;"
+    :max-height="460"
+  >
+    <el-table-column label="小区" min-width="100">
       <template slot-scope="scope">
-        {{ scope.row.order_no | orderNoFilter }}
+        {{ scope.row.C_BoroughName | nameFilter }}
       </template>
     </el-table-column>
-    <el-table-column label="Price" width="195" align="center">
+    <el-table-column label="户数" min-width="60" align="center">
       <template slot-scope="scope">
-        ¥{{ scope.row.price | toThousandFilter }}
+        {{ scope.row.totalMeter | numFilter }}
       </template>
     </el-table-column>
-    <el-table-column label="Status" width="100" align="center">
-      <template slot-scope="{row}">
-        <el-tag :type="row.status | statusFilter">
-          {{ row.status }}
+    <el-table-column label="昨日用量" min-width="80" align="center">
+      <template slot-scope="scope">
+        {{ scope.row.heatNumSum | numFilter }}
+      </template>
+    </el-table-column>
+    <el-table-column label="昨日户均用量" min-width="80" align="center">
+      <template slot-scope="scope">
+        <el-tag :type="(scope.row.heatNumSum / scope.row.totalMeter) | statusFilter">
+          {{ parseInt(scope.row.heatNumSum / scope.row.totalMeter) }}
         </el-tag>
+      </template>
+    </el-table-column>
+    <el-table-column label="供水温度" min-width="60" align="center">
+      <template slot-scope="scope">
+        {{ scope.row.avgSupplyTemp | numFilter }}
+      </template>
+    </el-table-column>
+    <el-table-column label="回水温度" min-width="60" align="center">
+      <template slot-scope="scope">
+        {{ scope.row.avgReturnTemp | numFilter }}
       </template>
     </el-table-column>
   </el-table>
 </template>
 
 <script>
-// import { transactionList } from '@/api/remote-search'
+import { getCommunityInfo } from '@/api/conmunityInfo'
 
 export default {
   filters: {
     statusFilter(status) {
-      const statusMap = {
-        success: 'success',
-        pending: 'danger'
+      var usage = parseInt(status)
+      if (usage <= 0) {
+        return 'danger'
+      } else if (usage < 100) {
+        return 'warning'
+      } else if (usage < 500) {
+        return 'success'
+      } else {
+        return 'info'
       }
-      return statusMap[status]
     },
-    orderNoFilter(str) {
-      return str.substring(0, 30)
+    nameFilter(str) {
+      return str.trim()
+    },
+    numFilter(str) {
+      return parseInt(str)
     }
   },
   data() {
@@ -46,9 +73,10 @@ export default {
   },
   methods: {
     fetchData() {
-      // transactionList().then(response => {
-      //   this.list = response.data.items.slice(0, 8)
-      // })
+      getCommunityInfo().then(response => {
+        this.list = response.data
+        console.log(response)
+      })
     }
   }
 }

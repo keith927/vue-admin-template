@@ -8,6 +8,18 @@
       <line-chart :chart-data="lineChartData" />
     </el-row>
 
+    <el-row :gutter="8">
+      <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 12}" :xl="{span: 12}" style="padding-right:8px;margin-bottom:30px;">
+        <transaction-table />
+      </el-col>
+      <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 6}" :xl="{span: 6}" style="margin-bottom:30px;">
+        <todo-list />
+      </el-col>
+      <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 6}" :xl="{span: 6}" style="margin-bottom:30px;">
+        <box-card />
+      </el-col>
+    </el-row>
+
     <el-row :gutter="32">
       <el-col :xs="24" :sm="24" :lg="8">
         <div class="chart-wrapper">
@@ -23,18 +35,6 @@
         <div class="chart-wrapper">
           <bar-chart />
         </div>
-      </el-col>
-    </el-row>
-
-    <el-row :gutter="8">
-      <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 12}" :xl="{span: 12}" style="padding-right:8px;margin-bottom:30px;">
-        <transaction-table />
-      </el-col>
-      <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 6}" :xl="{span: 6}" style="margin-bottom:30px;">
-        <todo-list />
-      </el-col>
-      <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 6}" :xl="{span: 6}" style="margin-bottom:30px;">
-        <box-card />
       </el-col>
     </el-row>
   </div>
@@ -86,53 +86,55 @@ export default {
         var powerPlantHeatNum = []
         var powerPlantHeatUsage = []
         var heatExchangeHeatUsage = []
-        var temp = []
+        var supplyTemp = []
+        var airTemp = []
 
         response.data.forEach(element => {
           times.push(new Date(element.currenttime + 28800000).toJSON().substr(11, 2) + ':00')
           powerPlantHeatNum.push(parseInt(element.dcheatnum))
           powerPlantHeatUsage.push(parseInt(element.dcgrow))
           heatExchangeHeatUsage.push(parseInt(element.hrzgrow))
-          temp.push(element.temp)
+          supplyTemp.push(Math.round(element.dc_Supplytemp))
+          airTemp.push(parseInt(element.temp))
         })
 
-        var tempRange = [Math.min(...temp), Math.max(...temp)]
-        var powerPlantHeatNumRange = [Math.min(...powerPlantHeatNum), Math.max(...powerPlantHeatNum)]
-        var powerPlantHeatUsageRange = [Math.min(...powerPlantHeatUsage), Math.max(...powerPlantHeatUsage)]
-        var heatExchangeHeatUsageRange = [Math.min(...heatExchangeHeatUsage), Math.max(...heatExchangeHeatUsage)]
+        var heatNumRange = [Math.min(...powerPlantHeatNum), Math.max(...powerPlantHeatNum)]
+        var usageRange = [Math.min(...powerPlantHeatUsage, ...heatExchangeHeatUsage), Math.max(...powerPlantHeatUsage, ...heatExchangeHeatUsage)]
+        var tempRange = [Math.min(...airTemp, ...supplyTemp), Math.max(...airTemp, ...supplyTemp)]
 
         // 范围整形
+        heatNumRange[0] = Math.floor(heatNumRange[0] / 5) * 5
+        heatNumRange[1] = 5 + heatNumRange[0] + Math.ceil((heatNumRange[1] - heatNumRange[0]) / 5) * 5
+        usageRange[0] = Math.floor(usageRange[0] / 5) * 5
+        usageRange[1] = 5 + usageRange[0] + Math.ceil((usageRange[1] - usageRange[0]) / 5) * 5
         tempRange[0] = Math.floor(tempRange[0] / 5) * 5
         tempRange[1] = 5 + tempRange[0] + Math.ceil((tempRange[1] - tempRange[0]) / 5) * 5
-        powerPlantHeatNumRange[0] = Math.floor(powerPlantHeatNumRange[0] / 5) * 5
-        powerPlantHeatNumRange[1] = 5 + powerPlantHeatNumRange[0] + Math.ceil((powerPlantHeatNumRange[1] - powerPlantHeatNumRange[0]) / 5) * 5
-        powerPlantHeatUsageRange[0] = Math.floor(powerPlantHeatUsageRange[0] / 5) * 5
-        powerPlantHeatUsageRange[1] = 5 + powerPlantHeatUsageRange[0] + Math.ceil((powerPlantHeatUsageRange[1] - powerPlantHeatUsageRange[0]) / 5) * 5
-        heatExchangeHeatUsageRange[0] = Math.floor(heatExchangeHeatUsageRange[0] / 5) * 5
-        heatExchangeHeatUsageRange[1] = 5 + heatExchangeHeatUsageRange[0] + Math.ceil((heatExchangeHeatUsageRange[1] - heatExchangeHeatUsageRange[0]) / 5) * 5
 
         this.HeatNumHis = {
           heatNum: {
-            serial: [powerPlantHeatNum, temp],
-            serialRange: [powerPlantHeatNumRange, tempRange],
-            serialIndex: [0, 1],
-            serialName: ['电厂热量', '温度'],
+            serial: [powerPlantHeatNum, supplyTemp, airTemp],
+            serialName: ['电厂热量', '电厂供水温度', '气温'],
+            serialAxisIndex: [0, 1, 1],
+
+            yAxisRange: [heatNumRange, tempRange],
             xAxis: [times]
           },
 
           powerPlantHeatUsage: {
-            serial: [powerPlantHeatUsage, temp],
-            serialRange: [powerPlantHeatUsageRange, tempRange],
-            serialIndex: [0, 1],
-            serialName: ['电厂用量', '温度'],
+            serial: [powerPlantHeatUsage, supplyTemp, airTemp],
+            serialName: ['电厂用量', '电厂供水温度', '气温'],
+            serialAxisIndex: [0, 1, 1],
+
+            yAxisRange: [usageRange, tempRange],
             xAxis: [times]
           },
 
           heatExchangeHeatUsage: {
-            serial: [powerPlantHeatUsage, heatExchangeHeatUsage],
-            serialRange: [powerPlantHeatUsageRange, heatExchangeHeatUsageRange],
-            serialIndex: [0, 1],
-            serialName: ['电厂用量', '换热站用量'],
+            serial: [powerPlantHeatUsage, heatExchangeHeatUsage, airTemp],
+            serialName: ['电厂用量', '换热站用量', '气温'],
+            serialAxisIndex: [0, 0, 1],
+
+            yAxisRange: [usageRange, tempRange],
             xAxis: [times]
           }
         }
