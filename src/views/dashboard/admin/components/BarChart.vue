@@ -1,16 +1,16 @@
 <template>
-  <div :class="className" :style="{height:height,width:width}" />
+  <div :class="className" :style="{height:height,width:width,background:'white'}" />
 </template>
 
 <script>
 import echarts from 'echarts'
 require('echarts/theme/macarons') // echarts theme
-import resize from './mixins/resize'
+// import resize from './mixins/resize'
 
 const animationDuration = 6000
 
 export default {
-  mixins: [resize],
+  // mixins: [resize],
   props: {
     className: {
       type: String,
@@ -22,12 +22,28 @@ export default {
     },
     height: {
       type: String,
-      default: '300px'
+      default: '447px'
+    },
+    autoResize: {
+      type: Boolean,
+      default: true
+    },
+    communityChartData: {
+      type: Object,
+      required: true
     }
   },
   data() {
     return {
       chart: null
+    }
+  },
+  watch: {
+    communityChartData: {
+      deep: true,
+      handler(val) {
+        this.setOptions(val)
+      }
     }
   },
   mounted() {
@@ -45,8 +61,23 @@ export default {
   methods: {
     initChart() {
       this.chart = echarts.init(this.$el, 'macarons')
+      this.setOptions(this.communityChartData)
+    },
+    setOptions(communityChartData) {
+      if (!communityChartData || typeof communityChartData.name === 'undefined') {
+        return
+      }
 
       this.chart.setOption({
+        title: {
+          text: communityChartData.name.trim() + '近7日用量',
+          left: 'center',
+          textStyle: {
+            color: '#000',
+            fontSize: 15
+          },
+          top: 20
+        },
         tooltip: {
           trigger: 'axis',
           axisPointer: { // 坐标轴指示器，坐标轴触发有效
@@ -54,15 +85,15 @@ export default {
           }
         },
         grid: {
-          top: 10,
-          left: '2%',
-          right: '2%',
-          bottom: '3%',
+          top: '60',
+          left: '20',
+          right: '40',
+          bottom: '20',
           containLabel: true
         },
         xAxis: [{
           type: 'category',
-          data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          data: communityChartData.times,
           axisTick: {
             alignWithLabel: true
           }
@@ -78,21 +109,7 @@ export default {
           type: 'bar',
           stack: 'vistors',
           barWidth: '60%',
-          data: [79, 52, 200, 334, 390, 330, 220],
-          animationDuration
-        }, {
-          name: 'pageB',
-          type: 'bar',
-          stack: 'vistors',
-          barWidth: '60%',
-          data: [80, 52, 200, 334, 390, 330, 220],
-          animationDuration
-        }, {
-          name: 'pageC',
-          type: 'bar',
-          stack: 'vistors',
-          barWidth: '60%',
-          data: [30, 52, 200, 334, 390, 330, 220],
+          data: communityChartData.data,
           animationDuration
         }]
       })

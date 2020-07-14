@@ -5,10 +5,11 @@
 <script>
 import echarts from 'echarts'
 require('echarts/theme/macarons') // echarts theme
-import resize from './mixins/resize'
+// import resize from './mixins/resize'
+import { getGatewayInfo } from '@/api/gatewayInfo'
 
 export default {
-  mixins: [resize],
+  // mixins: [resize],
   props: {
     className: {
       type: String,
@@ -20,12 +21,21 @@ export default {
     },
     height: {
       type: String,
-      default: '300px'
+      default: '460px'
     }
   },
   data() {
     return {
-      chart: null
+      chart: null,
+      charData: null
+    }
+  },
+  watch: {
+    charData: {
+      deep: true,
+      handler(val) {
+        this.setOptions(val)
+      }
     }
   },
   mounted() {
@@ -40,9 +50,20 @@ export default {
     this.chart.dispose()
     this.chart = null
   },
+  created() {
+    this.fetchData()
+  },
   methods: {
     initChart() {
       this.chart = echarts.init(this.$el, 'macarons')
+      this.setOptions(this.charData)
+    },
+
+    setOptions(charData) {
+      if (!charData) {
+        return
+      }
+      console.log(this.charData)
 
       this.chart.setOption({
         tooltip: {
@@ -52,26 +73,39 @@ export default {
         legend: {
           left: 'center',
           bottom: '10',
-          data: ['Industries', 'Technology', 'Forex', 'Gold', 'Forecasts']
+          data: ['在线网关', '离线网关']
         },
         series: [
           {
-            name: 'WEEKLY WRITE ARTICLES',
+            name: '网关概况',
             type: 'pie',
             roseType: 'radius',
             radius: [15, 95],
             center: ['50%', '38%'],
             data: [
-              { value: 320, name: 'Industries' },
-              { value: 240, name: 'Technology' },
-              { value: 149, name: 'Forex' },
-              { value: 100, name: 'Gold' },
-              { value: 59, name: 'Forecasts' }
+              { value: this.charData[0], name: '在线网关' },
+              { value: this.charData[1], name: '离线网关' }
             ],
             animationEasing: 'cubicInOut',
             animationDuration: 2600
           }
         ]
+      })
+    },
+
+    fetchData() {
+      getGatewayInfo().then(response => {
+        var onlineNum = 0
+        var offlineNum = 0
+        response.data.list.map(
+          (item, index, arr) => {
+            if (item.online) {
+              onlineNum++
+            } else {
+              offlineNum++
+            }
+          })
+        this.charData = [onlineNum, offlineNum]
       })
     }
   }

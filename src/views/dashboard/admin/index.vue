@@ -1,6 +1,5 @@
 <template>
   <div class="dashboard-editor-container">
-    <!-- <github-corner class="github-corner" /> -->
 
     <panel-group @handleSetLineChartData="handleSetLineChartData" />
 
@@ -8,32 +7,22 @@
       <line-chart :chart-data="lineChartData" />
     </el-row>
 
-    <el-row :gutter="8">
-      <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 12}" :xl="{span: 12}" style="padding-right:8px;margin-bottom:30px;">
-        <transaction-table />
+    <el-row v-if="communityInfo" :gutter="16">
+      <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 8}" :xl="{span: 8}" style="margin-bottom:30px;">
+        <community-info-table :community-table-data="communityTableData" />
       </el-col>
-      <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 6}" :xl="{span: 6}" style="margin-bottom:30px;">
-        <todo-list />
-      </el-col>
-      <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 6}" :xl="{span: 6}" style="margin-bottom:30px;">
-        <box-card />
+      <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 16}" :xl="{span: 16}" style="margin-bottom:30px;">
+        <bar-chart :community-chart-data="communityChartData" />
       </el-col>
     </el-row>
 
-    <el-row :gutter="32">
-      <el-col :xs="24" :sm="24" :lg="8">
-        <div class="chart-wrapper">
-          <raddar-chart />
-        </div>
+    <el-row v-if="communityInfo" :gutter="16">
+      <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 16}" :xl="{span: 16}" style="margin-bottom:30px;">
+        <scatter-chart :community-info="communityInfo" />
       </el-col>
-      <el-col :xs="24" :sm="24" :lg="8">
+      <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 8}" :xl="{span: 8}" style="margin-bottom:30px;">
         <div class="chart-wrapper">
           <pie-chart />
-        </div>
-      </el-col>
-      <el-col :xs="24" :sm="24" :lg="8">
-        <div class="chart-wrapper">
-          <bar-chart />
         </div>
       </el-col>
     </el-row>
@@ -41,38 +30,67 @@
 </template>
 
 <script>
-// import GithubCorner from '@/components/GithubCorner'
 import PanelGroup from './components/PanelGroup'
 import LineChart from './components/LineChart'
-import RaddarChart from './components/RaddarChart'
 import PieChart from './components/PieChart'
 import BarChart from './components/BarChart'
-import TransactionTable from './components/TransactionTable'
-import TodoList from './components/TodoList'
-import BoxCard from './components/BoxCard'
+import CommunityInfoTable from './components/CommunityInfoTable'
+import ScatterChart from './components/ScatterChart'
 import { getPowerPlantHeatNumHis } from '@/api/powerPlantInfo.js'
+import { getCommunityHeatUsageHis } from '@/api/conmunityInfo.js'
+import { getCommunityInfo } from '@/api/conmunityInfo'
 
 export default {
   name: 'DashboardAdmin',
   components: {
-    // GithubCorner,
     PanelGroup,
     LineChart,
-    RaddarChart,
     PieChart,
     BarChart,
-    TransactionTable,
-    TodoList,
-    BoxCard
+    CommunityInfoTable,
+    ScatterChart
   },
   data() {
     return {
       HeatNumHis: null,
-      lineChartData: null
+      lineChartData: null,
+      communityIndex: 0,
+      communityInfo: null,
+      communityChartData: {},
+      communityTableData: []
     }
   },
   created() {
     this.fetchData()
+  },
+  mounted() {
+    const timer = setInterval(() => {
+      if (!this.communityInfo) {
+        return
+      }
+
+      var communityTableData = []
+      var communityIndex = this.communityIndex
+
+      console.log('from ' + this.communityIndex + ' to ' + ((this.communityIndex + 7) % this.communityInfo.length))
+
+      for (var i = 0; i < 7; i++) {
+        communityTableData.push(this.communityInfo[communityIndex % this.communityInfo.length])
+        communityIndex += 1
+      }
+      this.communityTableData = communityTableData
+      this.handleShowCommunityDetailInfo(this.communityTableData[0].I_BoroughID, this.communityTableData[0].C_BoroughName)
+      this.communityIndex += 1
+      if (this.communityIndex >= this.communityInfo.length) {
+        this.communityIndex = 0
+      }
+
+      console.log('开启定时器')
+    }, 5000)
+    this.$once('hook:beforeDestroy', () => {
+      clearInterval(timer)
+      console.log('清除定时器')
+    })
   },
   methods: {
     handleSetLineChartData(type) {
@@ -141,6 +159,34 @@ export default {
 
         this.lineChartData = this.HeatNumHis['heatNum']
       })
+      getCommunityInfo().then(response => {
+        this.communityInfo = response.data
+      })
+    },
+    handleShowCommunityDetailInfo(id, name) {
+      getCommunityHeatUsageHis(id).then(response => {
+        var timeBase = new Date(new Date().setHours(0, 0, 0, 0)).getTime()
+        var startTimestamp = timeBase - 7 * 86400000
+        var endTimestamp = timeBase - 1
+
+        var times = []
+        var heatNum = []
+
+        for (var i = 0; i < 7; i++) {
+          times.push(new Date(startTimestamp + i * 86400000 + 28800000).toJSON().substr(0, 10))
+          heatNum.push(0)
+        }
+
+        console.log(response)
+        for (var j = 0; j < response.data.length; j++) {
+          var item = response.data[j]
+          if (item.date <= endTimestamp && item.date > startTimestamp) {
+            heatNum[Math.floor((item.date - startTimestamp) / 86400000)] = parseInt(item.heatNumSum)
+          }
+        }
+
+        this.communityChartData = { 'name': name, 'times': times, 'data': heatNum }
+      })
     }
   }
 }
@@ -161,14 +207,14 @@ export default {
 
   .chart-wrapper {
     background: #fff;
-    padding: 16px 16px 0;
+    // padding: 16px 16px 0;
     margin-bottom: 32px;
   }
 }
 
 @media (max-width:1024px) {
   .chart-wrapper {
-    padding: 8px;
+    // padding: 8px;
   }
 }
 </style>

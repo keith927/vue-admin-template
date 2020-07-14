@@ -5,10 +5,10 @@
 <script>
 import echarts from 'echarts'
 require('echarts/theme/macarons') // echarts theme
-import resize from './mixins/resize'
+// import resize from './mixins/resize'
 
 export default {
-  mixins: [resize],
+  // mixins: [resize],
   props: {
     className: {
       type: String,
@@ -156,7 +156,7 @@ export default {
               color: '#34bfa3',
               lineStyle: {
                 color: '#34bfa3',
-                width: 2
+                width: 1
               }
             }
           },

@@ -1,10 +1,10 @@
 <template>
   <el-table
-    :data="list"
-    style="width: 100%;padding-top: 15px;"
-    :max-height="460"
+    :data="communityTableData"
+    style="width: 100%;"
+    :height="447"
   >
-    <el-table-column label="小区" min-width="100">
+    <el-table-column label="小区" min-width="100" show-overflow-tooltip>
       <template slot-scope="scope">
         {{ scope.row.C_BoroughName | nameFilter }}
       </template>
@@ -14,34 +14,22 @@
         {{ scope.row.totalMeter | numFilter }}
       </template>
     </el-table-column>
-    <el-table-column label="昨日用量" min-width="80" align="center">
+    <el-table-column label="昨日用量" min-width="75" align="center">
       <template slot-scope="scope">
         {{ scope.row.heatNumSum | numFilter }}
       </template>
     </el-table-column>
-    <el-table-column label="昨日户均用量" min-width="80" align="center">
+    <el-table-column label="户均用量" min-width="75" align="center">
       <template slot-scope="scope">
         <el-tag :type="(scope.row.heatNumSum / scope.row.totalMeter) | statusFilter">
           {{ parseInt(scope.row.heatNumSum / scope.row.totalMeter) }}
         </el-tag>
       </template>
     </el-table-column>
-    <el-table-column label="供水温度" min-width="60" align="center">
-      <template slot-scope="scope">
-        {{ scope.row.avgSupplyTemp | numFilter }}
-      </template>
-    </el-table-column>
-    <el-table-column label="回水温度" min-width="60" align="center">
-      <template slot-scope="scope">
-        {{ scope.row.avgReturnTemp | numFilter }}
-      </template>
-    </el-table-column>
   </el-table>
 </template>
 
 <script>
-import { getCommunityInfo } from '@/api/conmunityInfo'
-
 export default {
   filters: {
     statusFilter(status) {
@@ -63,20 +51,26 @@ export default {
       return parseInt(str)
     }
   },
-  data() {
-    return {
-      list: null
-    }
-  },
-  created() {
-    this.fetchData()
-  },
-  methods: {
-    fetchData() {
-      getCommunityInfo().then(response => {
-        this.list = response.data
-        console.log(response)
-      })
+  props: {
+    className: {
+      type: String,
+      default: 'chart'
+    },
+    width: {
+      type: String,
+      default: '100%'
+    },
+    height: {
+      type: String,
+      default: '316px'
+    },
+    autoResize: {
+      type: Boolean,
+      default: true
+    },
+    communityTableData: {
+      type: Array,
+      required: true
     }
   }
 }
