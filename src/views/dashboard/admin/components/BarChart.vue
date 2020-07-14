@@ -5,12 +5,12 @@
 <script>
 import echarts from 'echarts'
 require('echarts/theme/macarons') // echarts theme
-// import resize from './mixins/resize'
+import resize from './mixins/resize'
 
 const animationDuration = 6000
 
 export default {
-  // mixins: [resize],
+  mixins: [resize],
   props: {
     className: {
       type: String,
