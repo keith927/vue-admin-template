@@ -56,23 +56,44 @@ export const constantRoutes = [
   },
 
   {
-    path: '/example',
+    path: '/data',
     component: Layout,
-    redirect: '/example/table',
-    name: 'Example',
-    meta: { title: 'Example', icon: 'el-icon-s-help' },
+    redirect: '/data/community/summary',
+    name: 'Data',
+    meta: { title: '集成数据', icon: 'el-icon-s-help' },
     children: [
       {
-        path: 'table',
-        name: 'Table',
-        component: () => import('@/views/table/index'),
-        meta: { title: 'Table', icon: 'table' }
+        path: 'power-exchange',
+        name: 'Power-exchange',
+        component: () => import('@/views/power-exchange/index'),
+        meta: { title: '换热站', icon: 'table' }
       },
       {
-        path: 'tree',
-        name: 'Tree',
-        component: () => import('@/views/tree/index'),
-        meta: { title: 'Tree', icon: 'tree' }
+        path: 'trade',
+        name: 'Trade',
+        component: () => import('@/views/trade/index'),
+        meta: { title: '贸易', icon: 'table' }
+      },
+      {
+        path: 'community',
+        name: 'Community',
+        redirect: '/data/community/summary',
+        component: () => import('@/views/community/index'),
+        meta: { title: '小区', icon: 'table' },
+        children: [
+          {
+            path: 'summary',
+            name: 'Summary',
+            component: () => import('@/views/community/list/index'),
+            meta: { title: '概览', icon: 'table' }
+          },
+          {
+            path: 'info',
+            name: 'Info',
+            component: () => import('@/views/community/info/index'),
+            meta: { title: '详情', icon: 'table' }
+          }
+        ]
       }
     ]
   },

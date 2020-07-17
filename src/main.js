@@ -33,6 +33,10 @@ Vue.use(ElementUI, { locale })
 // 如果想要中文版 element-ui，按如下方式声明
 // Vue.use(ElementUI)
 
+// 导入百度地图， 参考https://dafrok.github.io/vue-baidu-map/#/zh/index
+import BaiduMap from 'vue-baidu-map'
+Vue.use(BaiduMap, { ak: 'fu6VQfe1OSCltwKxVVoTgr9hVIod8HPd' })
+
 Vue.config.productionTip = false
 
 new Vue({
