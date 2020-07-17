@@ -66,6 +66,8 @@
       highlight-current-row
       style="width: 100%;"
       :default-sort="{prop: listQuery.sort, order: listQuery.order}"
+      show-summary
+      :summary-method="getSummaries"
       @sort-change="sortChange"
     >
       <el-table-column label="序号" min-width="80px" prop="boroughId" sortable="custom" align="center">
@@ -75,7 +77,7 @@
       </el-table-column>
       <el-table-column label="小区" min-width="120px" align="center" show-overflow-tooltip>
         <template slot-scope="{row}">
-          <span class="link-type" @click="handleShowCommunityDetails(row)">{{ row.boroughName | nameFilter }}</span>
+          <span class="link-type" @click="handleShowCommunityDetails(row)">{{ row.boroughName }}</span>
         </template>
       </el-table-column>
       <el-table-column label="户数" min-width="80px" prop="totalMeter" sortable="custom" align="center">
@@ -159,9 +161,6 @@ export default {
   components: { Pagination },
   directives: { waves },
   filters: {
-    nameFilter(name) {
-      return name.trim()
-    },
     heatNumFilter(val) {
       return val === 0 ? '-' : val
     },
@@ -207,7 +206,8 @@ export default {
       showMissedMeterNum: false,
       showPrecent: true,
       showDescription: false,
-      lableSuffix: '抄通'
+      lableSuffix: '抄通',
+      communitySummary: null
     }
   },
   watch: {
@@ -219,7 +219,6 @@ export default {
     listQuery: {
       deep: true,
       handler: function(val) {
-        console.log(val)
         this.handleFilter()
       }
     }
@@ -233,10 +232,13 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
+      var communitySummary = { totalMeter: 0, through: 0, throughHis: [0, 0, 0, 0, 0, 0, 0] }
 
       getCommunityDetailInfo().then(response => {
         this.communities = response.data.map(v => {
+          v.boroughName = v.boroughName.trim()
           v.throughHis = [0, 1, 2, 3, 4, 5, 6].map(d => {
+            communitySummary.throughHis[d] += v[this.dateArray[d]].through
             return v[this.dateArray[d]].through
           })
           v.throughRateHis = [0, 1, 2, 3, 4, 5, 6].map(d => {
@@ -245,8 +247,19 @@ export default {
           v.avgUsage = typeof v.heatNumSum === 'undefined' ? 0 : Math.round(v.heatNumSum / v.totalMeter)
           v.currentAvgSupplyTemp = parseInt(v.currentAvgSupplyTemp)
           v.currentAvgReturnTemp = parseInt(v.currentAvgReturnTemp)
+
+          communitySummary.totalMeter += v.totalMeter
+          communitySummary.through += v.sevenThrough
+
           return v
         })
+
+        // 更新合计信息
+        communitySummary.throughRateHis = communitySummary.throughHis.map(v => {
+          return Math.round(v * 10000 / communitySummary.totalMeter) / 100
+        })
+        communitySummary.throughRate = Math.round(communitySummary.through * 10000 / communitySummary.totalMeter) / 100
+        this.communitySummary = communitySummary
 
         // 默认排序与筛选
         this.communities.sort(this.compare(this.listQuery.sort, this.listQuery.order, this.showPrecent, this.showMissedMeterNum))
@@ -298,7 +311,6 @@ export default {
 
       // 按抄通率过滤
       const range = [this.listQuery.meterRateRange[0] / 100, this.listQuery.meterRateRange[1] / 100]
-      console.log(range)
       for (let i = 0; i < matchedList.length; i++) {
         if (matchedList[i].sevenThroughRate < range[0] || matchedList[i].sevenThroughRate > range[1]) {
           matchedList.splice(i--, 1)
@@ -393,6 +405,42 @@ export default {
         path: '/data/community/info',
         query: { boroughId: row.boroughId }
       })
+    },
+    getSummaries(param) {
+      const { columns } = param
+      const sums = []
+      columns.forEach((column, index) => {
+        sums[index] = ''
+      })
+
+      if (!this.communitySummary) {
+        return sums
+      }
+
+      sums[0] = '合计'
+      sums[2] = this.communitySummary.totalMeter
+
+      if (this.showMissedMeterNum) {
+        if (this.showMeterRateHis) {
+          sums[3] = this.showPrecent ? (100 - this.communitySummary.throughRate) + '%' : this.communitySummary.totalMeter - this.communitySummary.through
+          for (let i = 4; i < columns.length && i <= 10; i++) {
+            sums[i] = this.showPrecent ? (100 - this.communitySummary.throughRateHis[i - 4]) + '%' : this.communitySummary.totalMeter - this.communitySummary.throughHis[i - 4]
+          }
+        } else {
+          sums[6] = this.showPrecent ? (100 - this.communitySummary.throughRate) + '%' : this.communitySummary.totalMeter - this.communitySummary.through
+        }
+      } else {
+        if (this.showMeterRateHis) {
+          sums[3] = this.showPrecent ? this.communitySummary.throughRate + '%' : this.communitySummary.through
+          for (let i = 4; i < columns.length && i <= 10; i++) {
+            sums[i] = this.showPrecent ? this.communitySummary.throughRateHis[i - 4] + '%' : this.communitySummary.throughHis[i - 4]
+          }
+        } else {
+          sums[6] = this.showPrecent ? this.communitySummary.throughRate + '%' : this.communitySummary.through
+        }
+      }
+
+      return sums
     }
   }
 }
