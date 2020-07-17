@@ -9,8 +9,8 @@ export function getCommunityInfo() {
 
 export function getCommunityDetailInfo() {
   var timeBase = new Date(new Date().setHours(0, 0, 0, 0)).getTime()
-  var startTime = new Date(timeBase - 7 * 86400000).toLocaleString('chinese', { hour12: false })
-  var endTime = new Date(timeBase - 1).toLocaleString('chinese', { hour12: false })
+  var startTime = new Date(timeBase - 7 * 86400000 + 28800000).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/')
+  var endTime = new Date(timeBase - 1 + 28800000).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/')
 
   return request({
     url: '/through/DetailOfThrough?startDate=' + startTime + '&endDate=' + endTime,
@@ -20,8 +20,8 @@ export function getCommunityDetailInfo() {
 
 export function getSingeCommunityDetailInfo(name) {
   var timeBase = new Date(new Date().setHours(0, 0, 0, 0)).getTime()
-  var startTime = new Date(timeBase - 7 * 86400000).toLocaleString('chinese', { hour12: false })
-  var endTime = new Date(timeBase - 1).toLocaleString('chinese', { hour12: false })
+  var startTime = new Date(timeBase - 7 * 86400000 + 28800000).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/')
+  var endTime = new Date(timeBase - 1 + 28800000).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/')
 
   return request({
     url: '/through/DetailOfThrough?startDate=' + startTime + '&endDate=' + endTime + '&boroughName=' + name,
@@ -31,8 +31,8 @@ export function getSingeCommunityDetailInfo(name) {
 
 export function getCommunityHeatUsageHis(communityId) {
   var timeBase = new Date(new Date().setHours(0, 0, 0, 0)).getTime()
-  var startTime = new Date(timeBase - 7 * 86400000).toLocaleString('chinese', { hour12: false })
-  var endTime = new Date(timeBase - 1).toLocaleString('chinese', { hour12: false })
+  var startTime = new Date(timeBase - 7 * 86400000 + 28800000).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/')
+  var endTime = new Date(timeBase - 1 + 28800000).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/')
 
   return request({
     url: '/meter/boroughHeatNum?boroughId=' + communityId + '&startDate=' + startTime + '&endDate=' + endTime,
