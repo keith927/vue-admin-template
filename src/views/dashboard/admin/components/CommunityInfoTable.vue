@@ -6,7 +6,7 @@
   >
     <el-table-column label="小区" min-width="100" show-overflow-tooltip>
       <template slot-scope="scope">
-        {{ scope.row.C_BoroughName | nameFilter }}
+        {{ scope.row.c_BoroughName | nameFilter }}
       </template>
     </el-table-column>
     <el-table-column label="户数" min-width="60" align="center">

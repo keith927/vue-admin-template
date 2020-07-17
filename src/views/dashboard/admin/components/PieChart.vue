@@ -63,7 +63,6 @@ export default {
       if (!charData) {
         return
       }
-      console.log(this.charData)
 
       this.chart.setOption({
         tooltip: {

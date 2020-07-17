@@ -66,7 +66,6 @@ export default {
         return
       }
 
-      console.log(communityInfo)
       var minWaterTemp = 99
       var maxWaterTemp = 0
 
@@ -74,15 +73,13 @@ export default {
         (item, index, arr) => {
           minWaterTemp = minWaterTemp < item.currentAvgReturnTemp ? minWaterTemp : item.currentAvgReturnTemp
           maxWaterTemp = maxWaterTemp > item.currentAvgSupplyTemp ? maxWaterTemp : item.currentAvgSupplyTemp
-          return [item.currentAvgReturnTemp, item.currentAvgSupplyTemp, item.totalMeter, item.I_BoroughID, item.C_BoroughName]
+          return [item.currentAvgReturnTemp, item.currentAvgSupplyTemp, item.totalMeter, item.i_BoroughID, item.c_BoroughName]
         }
       )
 
       minWaterTemp = Math.floor(minWaterTemp / 5) * 5
       minWaterTemp = minWaterTemp < 5 ? minWaterTemp : minWaterTemp - 5
       maxWaterTemp = Math.ceil(maxWaterTemp / 5) * 5 + 5
-
-      console.log(minWaterTemp, maxWaterTemp)
 
       this.chart.setOption({
         color: ['#c23531'],

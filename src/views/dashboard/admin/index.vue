@@ -72,24 +72,21 @@ export default {
       var communityTableData = []
       var communityIndex = this.communityIndex
 
-      console.log('from ' + this.communityIndex + ' to ' + ((this.communityIndex + 7) % this.communityInfo.length))
+      // console.log('from ' + this.communityIndex + ' to ' + ((this.communityIndex + 7) % this.communityInfo.length))
 
       for (var i = 0; i < 7; i++) {
         communityTableData.push(this.communityInfo[communityIndex % this.communityInfo.length])
         communityIndex += 1
       }
       this.communityTableData = communityTableData
-      this.handleShowCommunityDetailInfo(this.communityTableData[0].I_BoroughID, this.communityTableData[0].C_BoroughName)
+      this.handleShowCommunityDetailInfo(this.communityTableData[0].i_BoroughID, this.communityTableData[0].c_BoroughName)
       this.communityIndex += 1
       if (this.communityIndex >= this.communityInfo.length) {
         this.communityIndex = 0
       }
-
-      console.log('开启定时器')
     }, 5000)
     this.$once('hook:beforeDestroy', () => {
       clearInterval(timer)
-      console.log('清除定时器')
     })
   },
   methods: {
@@ -98,8 +95,6 @@ export default {
     },
     fetchData() {
       getPowerPlantHeatNumHis().then(response => {
-        console.log(response)
-
         var times = []
         var powerPlantHeatNum = []
         var powerPlantHeatUsage = []
@@ -177,7 +172,6 @@ export default {
           heatNum.push(0)
         }
 
-        console.log(response)
         for (var j = 0; j < response.data.length; j++) {
           var item = response.data[j]
           if (item.date <= endTimestamp && item.date > startTimestamp) {

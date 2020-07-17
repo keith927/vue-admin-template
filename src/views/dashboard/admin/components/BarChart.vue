@@ -105,7 +105,7 @@ export default {
           }
         }],
         series: [{
-          name: 'pageA',
+          name: '用量',
           type: 'bar',
           stack: 'vistors',
           barWidth: '60%',
