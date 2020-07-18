@@ -10,7 +10,7 @@ export function login(data) {
 
 export function getInfo(token) {
   return request({
-    url: '/refreshToken?token=' + token,
+    url: '/refreshToken',
     method: 'post',
     params: { token }
   })

@@ -62,6 +62,8 @@ const actions = {
         commit('SET_TOKEN', authorize)
         commit('SET_NAME', username.trim())
         commit('SET_AVATAR', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
+        setToken(authorize)
+
         resolve(data)
       }).catch(error => {
         reject(error)

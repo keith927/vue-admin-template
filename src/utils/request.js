@@ -7,7 +7,7 @@ import { getToken } from '@/utils/auth'
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
   // withCredentials: true, // send cookies when cross-domain requests
-  timeout: 5000 // request timeout
+  timeout: 20000 // request timeout
 })
 
 // request interceptor
@@ -72,7 +72,11 @@ service.interceptors.response.use(
     }
   },
   error => {
-    console.log('err' + error) // for debug
+    console.log('err', error, error.response) // for debug
+    if (typeof error.response.data !== 'undefined' && error.response.data.status === 500 && error.response.data.exception === 'org.apache.shiro.authc.AuthenticationException') {
+      console.log('err', error, error.response.data.status, error.response.data.exception) // for debug
+      store.dispatch('user/getInfo')
+    }
     Message({
       message: error.message,
       type: 'error',
