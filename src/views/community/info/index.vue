@@ -99,7 +99,7 @@
 
                 <el-col v-if="community" :span="24" style="margin-bottom:15px;">
                   <baidu-map
-                    style="height:420px;"
+                    style="height:450px;"
                     :center="mapCenter"
                     :zoom="mapZoom"
                     :max-zoom="18"
@@ -136,9 +136,10 @@
                       @open="onGwInIfoWindowOpen"
                     >
                       <p>网关编号: &nbsp;&nbsp;{{ gwInfoWindow.gatewayID }}</p>
-                      <p>当前状态: &nbsp;&nbsp;{{ gwInfoWindow.online ? '在线': '离线' }} ({{ new Date(((gwInfoWindow.online ? gwInfoWindow.lastShowTimeBegin : gwInfoWindow.lastOfftime) + 28800000)).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/') }})</p>
+                      <p>当前状态: &nbsp;&nbsp;{{ new Date(((gwInfoWindow.online ? gwInfoWindow.lastShowTimeBegin : gwInfoWindow.lastOfftime) + 28800000)).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/') }}  至今{{ gwInfoWindow.online ? '在线': '离线' }} </p>
                       <p>网关位置: &nbsp;&nbsp;{{ gwInfoWindow.location }}</p>
                       <p>抄通数量: &nbsp;&nbsp;{{ gwInfoWindow.throughNum }}</p>
+                      <p>直线距离: &nbsp;&nbsp;{{ gwInfoWindow.distance }}米</p>
                     </bm-info-window>
                     <bm-point-collection :points="inBoundsGwList" shape="BMAP_POINT_SHAPE_STAR" color="red" size="BMAP_POINT_SIZE_SMALL" />
                   </baidu-map>
@@ -155,7 +156,7 @@
                 <el-col v-if="community" :span="24" style="margin-bottom:15px;">
                   <template>
                     <el-col v-if="community" :span="24" style="margin-bottom:15px;">
-                      <div ref="meterRateDiv" style="height:360px;width:100%" />
+                      <div ref="meterRateDiv" style="height:450px;width:100%" />
                     </el-col>
                   </template>
                 </el-col>
@@ -168,11 +169,17 @@
                     fit
                     highlight-current-row
                     style="width: 100%;"
-                    height="350"
+                    height="598"
                     :show-summary="true"
                     :default-sort="{prop: 'totalNum', order: 'descending'}"
                     :summary-method="getMissedMeterSummaries"
                   >
+                    <el-table-column fixed label="序号" width="60px" prop="id" align="center">
+                      <template slot-scope="{$index}">
+                        <span>{{ $index + 1 }}</span>
+                      </template>
+                    </el-table-column>
+
                     <el-table-column fixed label="表号" min-width="95px" prop="meterNo" sortable align="center">
                       <template slot-scope="{row}">
                         <span>{{ row.meterNo }}</span>
@@ -328,13 +335,13 @@ export default {
       this.resetMap()
     },
     // 判断坐标点是否在区域内
-    isPointInBounds(point, distence) {
+    isPointInBounds(point, point2, distance) {
       var lat1 = (Math.PI / 180) * point.lat
-      var lat2 = (Math.PI / 180) * this.mapCenter.lat
+      var lat2 = (Math.PI / 180) * point2.latitude
 
       // 经度
       var lon1 = (Math.PI / 180) * point.lng
-      var lon2 = (Math.PI / 180) * this.mapCenter.lng
+      var lon2 = (Math.PI / 180) * point2.longitude
 
       // 地球半径，单位米
       var R = 6371000
@@ -342,7 +349,7 @@ export default {
       // 两点间距离，单位米
       var d = Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1)) * R
 
-      return d <= distence
+      return { 'distance': Math.round(d), 'isInBound': d <= distance }
     },
     resetMap() {
       if (!this.BMap || !this.map || !this.community.longitude || !this.community.latitude) {
@@ -385,28 +392,17 @@ export default {
         })
       }
     },
-    updateCommunityInfo() {
-      if (!this.communityList || !this.boroughId) {
-        return { name: null, index: null }
-      }
-      for (var i = 0; i < this.communityList.length; i++) {
-        if (this.communityList[i].boroughId === this.boroughId) {
-          this.community = Object.assign({}, this.communityList[i]) // 深拷贝
-          this.inputName = this.communityList[i].boroughName
-          console.log('found community', this.community)
-          return { name: this.inputName, index: i }
-        }
-      }
-    },
     setModifyStatus() {
       this.canModify = !this.canModify
     },
 
     updateInBoundsGwList() {
       var inBoundsGwList = []
-      if (this.gatewayList) {
+      if (this.gatewayList && this.community) {
         this.gatewayList.forEach(element => {
-          if (this.isPointInBounds(element, 600) === true) {
+          const { distance, isInBound } = this.isPointInBounds(element, this.community, 600)
+          if (isInBound) {
+            element.distance = distance
             inBoundsGwList.push(element)
           }
         })
@@ -770,7 +766,7 @@ export default {
     },
 
     getMissedMeterSummaries() {
-      return ['合计', ...this.missedMeterByMeterSummary]
+      return ['合计', '', ...this.missedMeterByMeterSummary]
     }
   }
 }
