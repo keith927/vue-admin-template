@@ -728,13 +728,13 @@ export default {
           name: '单日抄通',
           itemStyle: {
             normal: {
-              color: '#f4516c',
+              color: '#40c9c6',
               lineStyle: {
-                color: '#f4516c',
+                color: '#40c9c6',
                 width: 2
               },
               areaStyle: {
-                color: '#f4516c'
+                color: '#40c9c6'
               }
             }
           },
@@ -755,10 +755,11 @@ export default {
               }
             }
           },
+          showSymbol: false,
           smooth: true,
           type: 'line',
           data: data2,
-          animationDuration: 2800,
+          animationDuration: 100,
           animationEasing: 'quadraticOut'
         }]
       }
