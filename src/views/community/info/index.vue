@@ -205,7 +205,155 @@
           </el-card>
         </el-row>
       </el-tab-pane>
-      <el-tab-pane label="故障统计" name="stastics">故障统计</el-tab-pane>
+
+      <el-tab-pane label="故障统计" name="stastics">
+
+        <el-row v-loading="dataLoading">
+          <el-card class="box-card">
+            <div style="margin-bottom:50px;">
+              <el-form label-width="80px">
+
+                <el-form-item label="小区名称">
+                  <el-col :xs="{span: 24}" :sm="{span: 6}" :md="{span: 5}" :lg="{span: 4}" :xl="{span: 4}">
+                    <el-select v-if="communityList" v-model="inputName" filterable placeholder="请选择小区" @change="handleSelectCommunity">
+                      <el-option v-for="item in communityList" :key="item.boroughId" :label="item.boroughName" :value="item.boroughId" />
+                    </el-select>
+                  </el-col>
+                </el-form-item>
+
+                <el-col v-if="community" v-loading="loadingAbnormalList" :span="24" style="margin-bottom:15px;">
+                  <el-date-picker
+                    v-model="timeRange"
+                    type="daterange"
+                    align="right"
+                    unlink-panels
+                    range-separator="~"
+                    start-placeholder="开始日期"
+                    end-placeholder="结束日期"
+                    :picker-options="pickerOptions"
+                  />
+                </el-col>
+
+                <el-col v-if="community" v-loading="loadingAbnormalList" :span="24" style="margin-bottom:15px;">
+                  <el-table
+                    v-if="abnormalList"
+                    :data="abnormalList.list"
+                    border
+                    fit
+                    highlight-current-row
+                    style="width: 100%;"
+                  >
+                    <el-table-column label="序号" width="60px" align="center">
+                      <template slot-scope="{$index}">
+                        <span>{{ $index + 1 }}</span>
+                      </template>
+                    </el-table-column>
+
+                    <el-table-column label="户主信息" align="center">
+                      <el-table-column label="楼栋" min-width="60px" align="center" show-overflow-tooltip>
+                        <template slot-scope="{row}">
+                          <span>{{ row.c_BuildingName }}</span>
+                        </template>
+                      </el-table-column>
+
+                      <el-table-column label="单元" min-width="60px" align="center" show-overflow-tooltip>
+                        <template slot-scope="{row}">
+                          <span>{{ row.i_cell }}</span>
+                        </template>
+                      </el-table-column>
+
+                      <el-table-column label="房间" min-width="60px" align="center">
+                        <template slot-scope="{row}">
+                          <span>{{ row.c_roomnum }}</span>
+                        </template>
+                      </el-table-column>
+
+                      <el-table-column label="户主" min-width="60px" align="center" show-overflow-tooltip>
+                        <template slot-scope="{row}">
+                          <span>{{ row.c_ownername }}</span>
+                        </template>
+                      </el-table-column>
+
+                      <el-table-column label="卡号" min-width="60px" align="center">
+                        <template slot-scope="{row}">
+                          <span>{{ row.c_cardnum }}</span>
+                        </template>
+                      </el-table-column>
+
+                      <el-table-column label="表号" min-width="60px" align="center">
+                        <template slot-scope="{row}">
+                          <span>{{ row.meterno }}</span>
+                        </template>
+                      </el-table-column>
+                    </el-table-column>
+
+                    <el-table-column label="计量信息" align="center">
+                      <el-table-column label="累计热量" min-width="60px" align="center">
+                        <template slot-scope="{row}">
+                          <span>{{ row.totalHeat }}</span>
+                        </template>
+                      </el-table-column>
+
+                      <el-table-column label="累计流量" min-width="60px" align="center">
+                        <template slot-scope="{row}">
+                          <span>{{ row.totalFlow }}</span>
+                        </template>
+                      </el-table-column>
+
+                      <el-table-column label="流速" min-width="60px" align="center">
+                        <template slot-scope="{row}">
+                          <span>{{ row.flowRate }}</span>
+                        </template>
+                      </el-table-column>
+
+                      <el-table-column label="功率" min-width="75px" align="center">
+                        <template slot-scope="{row}">
+                          <span>{{ row.power }}</span>
+                        </template>
+                      </el-table-column>
+
+                      <el-table-column label="供水" min-width="75px" align="center">
+                        <template slot-scope="{row}">
+                          <span>{{ row.supplyTemp }}</span>
+                        </template>
+                      </el-table-column>
+
+                      <el-table-column label="回水" min-width="75px" align="center">
+                        <template slot-scope="{row}">
+                          <span>{{ row.returnTemp }}</span>
+                        </template>
+                      </el-table-column>
+
+                      <el-table-column label="温差" min-width="75px" align="center">
+                        <template slot-scope="{row}">
+                          <span>{{ row.wdc }}</span>
+                        </template>
+                      </el-table-column>
+
+                      <el-table-column label="抄表时间" min-width="75px" align="center" show-overflow-tooltip>
+                        <template slot-scope="{row}">
+                          <span>{{ row.receiveTime | filterTimestamp }}</span>
+                        </template>
+                      </el-table-column>
+                    </el-table-column>
+
+                  </el-table>
+                  <pagination
+                    v-if="abnormalList"
+                    v-show="abnormalList.total>0"
+                    :total="abnormalList.total"
+                    :page.sync="listQuery.page"
+                    :limit.sync="listQuery.size"
+                    :page-sizes="[15, 30, 50, 100]"
+                    @pagination="handleFilter"
+                  />
+                </el-col>
+
+              </el-form>
+            </div>
+          </el-card>
+        </el-row>
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -216,16 +364,24 @@ import { getCommunityDetailInfo, setCommunityGpsAndDesc, getSingeCommunityDetail
 import { getGatewayInfo } from '@/api/gatewayInfo'
 import echarts from 'echarts'
 import resize from '../../dashboard/admin/components/mixins/resize'
+import { getCommunityAbnormalInfo } from '@/api/abnormalInfo'
+import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 const startTimestamp = new Date(new Date().setHours(0, 0, 0, 0)).getTime() - 7 * 86400000
 
 export default {
   name: 'CommunityInfo',
+  components: { Pagination },
   directives: { waves },
+  filters: {
+    filterTimestamp(val) {
+      return new Date(val + 28800000).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/')
+    }
+  },
   mixins: [resize],
   data() {
     return {
-      activeName: 'meter',
+      activeName: 'summary',
       dataLoading: true,
 
       boroughId: null,
@@ -247,10 +403,59 @@ export default {
       dateArray: [],
 
       missedMeterByMeterNo: null,
-      missedMeterByMeterSummary: null
+      missedMeterByMeterSummary: null,
+
+      // 故障统计相关
+      pickerOptions: {
+        shortcuts: [{
+          text: '最近1天',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 1)
+            picker.$emit('pick', [start, end])
+          }
+        }, {
+          text: '最近7天',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+            picker.$emit('pick', [start, end])
+          }
+        }, {
+          text: '最近30天',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
+            picker.$emit('pick', [start, end])
+          }
+        }]
+      },
+      timeRange: null,
+      abnormalList: null,
+      listQuery: {
+        page: 1,
+        size: 15,
+        // sort: 'boroughId',
+        // order: 'ascending',
+        // inputName: '',
+        templeteId: null,
+        startDate: null,
+        endDate: null,
+        notThroughDays: null
+      },
+      loadingAbnormalList: true
     }
   },
   watch: {
+    timeRange: {
+      handler: function(val) {
+        this.listQuery.startDate = val[0] ? new Date(val[0] + 28800000).toJSON().substr(0, 10).replace(/-/g, '/') + ' 07:00:00' : null
+        this.listQuery.endDate = val[1] ? new Date(val[1] + 28800000).toJSON().substr(0, 10).replace(/-/g, '/') + ' 07:00:00' : null
+      }
+    },
     communityList: {
       deep: true,
       handler: function(val) {
@@ -288,6 +493,8 @@ export default {
     this.dateArray = [0, 1, 2, 3, 4, 5, 6].map(v => {
       return new Date(startTimestamp + v * 86400000 + 28800000).toJSON().substr(0, 10)
     })
+
+    this.timeRange = [new Date() - 3600 * 1000 * 24 * 1, new Date()]
 
     // 获取小区清单及概要信息
     getCommunityDetailInfo().then(response => {
@@ -473,6 +680,7 @@ export default {
       this.boroughId = id
       this.missedMeterByMeterNo = null
       this.missedMeterByMeterSummary = null
+      this.abnormalList = null
 
       // 更新周边网关信息
       this.updateInBoundsGwList()
@@ -525,6 +733,8 @@ export default {
         console.log('获取小区抄通率详情失败，' + error)
         this.dataLoading = false
       })
+
+      this.handleFilter()
     },
 
     // 点击网关图标事件
@@ -768,6 +978,21 @@ export default {
 
     getMissedMeterSummaries() {
       return ['合计', '', ...this.missedMeterByMeterSummary]
+    },
+
+    handleFilter() {
+      console.log(this.listQuery)
+      // 获取故障统计
+      this.loadingAbnormalList = true
+      getCommunityAbnormalInfo(this.boroughId, this.listQuery).then(response => {
+        this.loadingAbnormalList = false
+        this.abnormalList = response.data
+        console.log(this.abnormalList)
+      }).catch(error => {
+        this.loadingAbnormalList = false
+        this.$message.error('获取小区故障列表失败，' + error)
+        console.log('获取小区故障列表失败，' + error)
+      })
     }
   }
 }

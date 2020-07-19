@@ -215,12 +215,6 @@ export default {
       handler(val) {
         this.lableSuffix = val ? '未抄通' : '抄通'
       }
-    },
-    listQuery: {
-      deep: true,
-      handler: function(val) {
-        this.handleFilter()
-      }
     }
   },
   created() {
@@ -295,7 +289,7 @@ export default {
         return
       }
 
-      this.listQuery.page = 1
+      // this.listQuery.page = 1
       var matchedList = []
 
       // 过滤小区名
