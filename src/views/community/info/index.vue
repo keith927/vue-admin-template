@@ -1,357 +1,273 @@
 <template>
   <div class="app-container">
-    <el-tabs v-model="activeName" @tab-click="handleTabClick">
-      <el-tab-pane label="基本信息" name="summary">
+    <el-row v-loading="dataLoading" style="margin-bottom:50px;">
+      <el-card class="box-card">
+        <div style="margin-bottom:50px;">
+          <el-form label-width="40px">
 
-        <el-row v-loading="dataLoading">
-          <el-card class="box-card">
-            <div style="margin-bottom:50px;">
-              <el-form label-width="80px">
-
-                <el-form-item label="小区名称">
-                  <el-col :xs="{span: 24}" :sm="{span: 6}" :md="{span: 5}" :lg="{span: 4}" :xl="{span: 4}">
-                    <el-select v-if="communityList" v-model="inputName" filterable placeholder="请选择小区" @change="handleSelectCommunity">
-                      <el-option v-for="item in communityList" :key="item.boroughId" :label="item.boroughName" :value="item.boroughId" />
-                    </el-select>
-                  </el-col>
+            <el-row style="margin-bottom:15px;">
+              <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 12}" :xl="{span: 12}">
+                <el-form-item label="名称">
+                  <el-select v-if="communityList" v-model="inputName" filterable placeholder="请选择小区" style="width:100%" @change="handleSelectCommunity">
+                    <el-option v-for="item in communityList" :key="item.boroughId" :label="item.boroughName" :value="item.boroughId" />
+                  </el-select>
                 </el-form-item>
+              </el-col>
+            </el-row>
 
-                <el-form-item v-if="community" label="用户量">
-                  <el-col :xs="{span: 24}" :sm="{span: 6}" :md="{span: 5}" :lg="{span: 4}" :xl="{span: 4}">
-                    <el-input v-model="community.totalMeter" :disabled="true" />
-                  </el-col>
+            <el-row v-if="community" style="margin-bottom:15px;">
+              <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 12}" :xl="{span: 12}">
+                <el-form-item label="描述">
+                  <el-input v-model="community.remark" :disabled="!canModify" clearable style="width:100%" />
                 </el-form-item>
+              </el-col>
 
-                <el-form-item v-if="community" label="地理位置" style="height:545px;">
-                  <el-col :xs="{span: 24}" :sm="{span: 6}" :md="{span: 5}" :lg="{span: 4}" :xl="{span: 4}" style="margin-bottom:15px;">
-                    <el-tooltip class="item" effect="dark" content="经度, 可双击地图或拖动图标修改" placement="top-start">
-                      <el-input-number v-model="community.longitude" :precision="4" :step="0.0001" :disabled="!canModify" style="width:100%" />
-                    </el-tooltip>
-                  </el-col>
-                  <el-col class="line" :xs="{span: 0}" :sm="{span: 1}" :md="{span: 1}" :lg="{span: 1}" :xl="{span: 1}" align="center">/</el-col>
-                  <el-col :xs="{span: 24}" :sm="{span: 6}" :md="{span: 5}" :lg="{span: 4}" :xl="{span: 4}">
-                    <el-tooltip class="item" effect="dark" content="纬度, 可双击地图或拖动图标修改" placement="top-start">
-                      <el-input-number v-model="community.latitude" :precision="4" :step="0.0001" :disabled="!canModify" style="width:100%" />
-                    </el-tooltip>
-                  </el-col>
+              <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 12}" :xl="{span: 12}" align="right">
+                <el-button v-if="!canModify" icon="el-icon-edit" type="primary" @click="setModifyStatus">修改</el-button>
+                <el-button v-if="canModify" icon="el-icon-circle-check" type="success" @click="onSubmitCommunityInfo">提交</el-button>
+                <el-button icon="el-icon-refresh" type="warning" @click="onCancelCommunityInfo">取消</el-button>
+              </el-col>
+            </el-row>
 
-                  <el-col v-if="community" :span="24" style="margin-bottom:15px;">
-                    <baidu-map
-                      style="height:500px;"
-                      :center="mapCenter"
-                      :zoom="mapZoom"
-                      :max-zoom="18"
-                      :min-zoom="8"
-                      :map-click="false"
-                      :double-click-zoom="false"
-                      :dragging="canModify"
-                      :scroll-wheel-zoom="canModify"
-                      @ready="onMapReady"
-                      @resize="onMapResize"
-                      @dblclick="setCommunityLocation"
-                    >
-                      <bm-map-type :map-types="['BMAP_NORMAL_MAP', 'BMAP_HYBRID_MAP']" anchor="BMAP_ANCHOR_TOP_RIGHT" />
-                      <bm-scale anchor="BMAP_ANCHOR_BOTTOM_LEFT" />
-                      <bm-control :offset="{width: 10, height: 10}">
-                        <el-tooltip class="item" effect="dark" content="搜索地图" placement="top-start">
-                          <el-input v-model="searchKeyword" placeholder="请输入地图搜索条件" clearable :disabled="!canModify">
-                            <i slot="prefix" class="el-input__icon el-icon-search" />
-                          </el-input>
-                        </el-tooltip>
-                      </bm-control>
-                      <bm-marker v-if="map" :position="mapCenter" :dragging="canModify" @dragend="setCommunityLocation" />
-                      <bm-local-search v-if="canModify" :keyword="searchKeyword" :auto-viewport="true" :panel="false" :select-first-result="true" location="开封" />
-                    </baidu-map>
-                  </el-col>
+            <el-row v-if="community" style="margin-bottom:15px;">
+              <baidu-map
+                style="height:450px;"
+                :center="mapCenter"
+                :zoom="mapZoom"
+                :max-zoom="18"
+                :min-zoom="8"
+                :map-click="false"
+                :double-click-zoom="false"
+                :dragging="canModify"
+                :scroll-wheel-zoom="canModify"
+                @ready="onMapReady"
+                @resize="onMapResize"
+                @dblclick="setCommunityLocation"
+              >
+                <bm-navigation anchor="BMAP_ANCHOR_TOP_LEFT" />
+                <bm-map-type :map-types="['BMAP_NORMAL_MAP', 'BMAP_HYBRID_MAP']" anchor="BMAP_ANCHOR_TOP_RIGHT" />
+                <bm-scale anchor="BMAP_ANCHOR_BOTTOM_LEFT" />
+                <bm-control :offset="{width: 70, height: 10}">
+                  <el-tooltip class="item" effect="dark" content="搜索地图" placement="top-start">
+                    <el-input v-model="searchKeyword" placeholder="请输入地图搜索条件" clearable :disabled="!canModify">
+                      <i slot="prefix" class="el-input__icon el-icon-search" />
+                    </el-input>
+                  </el-tooltip>
+                </bm-control>
+                <bm-marker v-if="map" :position="mapCenter" :dragging="canModify" @dragend="setCommunityLocation" />
+                <bm-local-search v-if="canModify" :keyword="searchKeyword" :auto-viewport="true" :panel="false" :select-first-result="true" location="开封" />
 
-                </el-form-item>
+                <!-- 小区300米范围内网关信息 -->
+                <bm-marker
+                  v-for="(item, index) in inBoundsGwList"
+                  :key="item.id"
+                  :icon="{url:require(item.online ? '../../../assets/images/gw_green.png' : '../../../assets/images/gw_red.png'),size:{width:25,height:25}}"
+                  :position="{lng: item.lng, lat: item.lat}"
+                  @click="onClickGwEntity($event, index)"
+                />
 
-                <el-form-item v-if="community" label="备注" style="margin-bottom:50px;">
-                  <el-input v-model="community.remark" type="textarea" :rows="4" :disabled="!canModify" clearable />
-                </el-form-item>
+                <!-- 网关详情 -->
+                <bm-info-window
+                  v-if="gwInfoWindow.show"
+                  :position="{lng: gwInfoWindow.lng, lat: gwInfoWindow.lat}"
+                  title=" "
+                  :show="gwInfoWindow.show"
+                  :width="360"
+                  @close="onGwInIfoWindowClose"
+                  @open="onGwInIfoWindowOpen"
+                >
+                  <p>网关编号: &nbsp;&nbsp;{{ gwInfoWindow.gatewayID }}</p>
+                  <p>当前状态: &nbsp;&nbsp;{{ new Date(((gwInfoWindow.online ? gwInfoWindow.lastShowTimeBegin : gwInfoWindow.lastOfftime) + 28800000)).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/') }}  至今{{ gwInfoWindow.online ? '在线': '离线' }} </p>
+                  <p>网关位置: &nbsp;&nbsp;{{ gwInfoWindow.location }}</p>
+                  <p>抄通数量: &nbsp;&nbsp;{{ gwInfoWindow.throughNum }}</p>
+                  <p>直线距离: &nbsp;&nbsp;{{ gwInfoWindow.distance }}米</p>
+                </bm-info-window>
+                <bm-point-collection :points="inBoundsGwList" shape="BMAP_POINT_SHAPE_STAR" color="red" size="BMAP_POINT_SIZE_SMALL" />
+              </baidu-map>
+            </el-row>
 
-                <el-form-item v-if="community" align="center">
-                  <el-button v-if="!canModify" icon="el-icon-edit" type="primary" @click="setModifyStatus">修改</el-button>
-                  <el-button v-if="canModify" icon="el-icon-circle-check" type="success" @click="onSubmitCommunityInfo">提交</el-button>
-                  <el-button icon="el-icon-refresh" type="warning" @click="onCancelCommunityInfo">取消</el-button>
-                </el-form-item>
+            <el-row v-if="community" style="margin-bottom:15px;">
+              <div ref="meterNumStatisticDiv" style="height:60px;width:100%" />
+            </el-row>
 
-              </el-form>
-            </div>
-          </el-card>
-        </el-row>
-      </el-tab-pane>
+          </el-form>
+        </div>
+      </el-card>
+    </el-row>
 
+    <el-tabs v-model="activeName" style="padding-top:15px;" @tab-click="handleTabClick">
       <el-tab-pane label="抄通情况" name="meter">
+        <el-row v-if="community" v-loading="loadingMeterRateData" style="margin-bottom:15px;">
+          <div ref="meterRateDiv" style="height:450px;width:100%" />
+        </el-row>
 
-        <el-row v-loading="dataLoading">
-          <el-card class="box-card">
-            <div style="margin-bottom:50px;">
-              <el-form label-width="80px">
+        <el-row v-if="community" v-loading="loadingMeterRateData" style="margin-bottom:15px;">
+          <el-table
+            v-if="missedMeterByMeterNo"
+            :data="missedMeterByMeterNo"
+            border
+            fit
+            highlight-current-row
+            style="width: 100%;"
+            height="598"
+            :show-summary="true"
+            :default-sort="{prop: 'totalNum', order: 'descending'}"
+            :summary-method="getMissedMeterSummaries"
+          >
+            <el-table-column fixed label="序号" width="60px" prop="id" align="center">
+              <template slot-scope="{$index}">
+                <span>{{ $index + 1 }}</span>
+              </template>
+            </el-table-column>
 
-                <el-form-item label="小区名称">
-                  <el-col :xs="{span: 24}" :sm="{span: 6}" :md="{span: 5}" :lg="{span: 4}" :xl="{span: 4}">
-                    <el-select v-if="communityList" v-model="inputName" filterable placeholder="请选择小区" @change="handleSelectCommunity">
-                      <el-option v-for="item in communityList" :key="item.boroughId" :label="item.boroughName" :value="item.boroughId" />
-                    </el-select>
-                  </el-col>
-                </el-form-item>
+            <el-table-column fixed label="表号" min-width="95px" prop="meterNo" sortable align="center">
+              <template slot-scope="{row}">
+                <span>{{ row.meterNo }}</span>
+              </template>
+            </el-table-column>
 
-                <el-col v-if="community" :span="24" style="margin-bottom:15px;">
-                  <baidu-map
-                    style="height:450px;"
-                    :center="mapCenter"
-                    :zoom="mapZoom"
-                    :max-zoom="18"
-                    :min-zoom="8"
-                    :map-click="false"
-                    :double-click-zoom="false"
-                    :dragging="false"
-                    :scroll-wheel-zoom="false"
-                    @ready="onMapReady"
-                    @resize="onMapResize"
-                  >
-                    <bm-navigation anchor="BMAP_ANCHOR_TOP_LEFT" />
-                    <bm-map-type :map-types="['BMAP_NORMAL_MAP', 'BMAP_HYBRID_MAP']" anchor="BMAP_ANCHOR_TOP_RIGHT" />
-                    <bm-scale anchor="BMAP_ANCHOR_BOTTOM_LEFT" />
-                    <bm-marker v-if="map" :position="mapCenter" :dragging="canModify" @dragend="setCommunityLocation" />
+            <el-table-column label="次数" min-width="75px" prop="totalNum" sortable align="center">
+              <template slot-scope="{row}">
+                <span>{{ row.total }}</span>
+              </template>
+            </el-table-column>
 
-                    <!-- 小区300米范围内网关信息 -->
-                    <bm-marker
-                      v-for="(item, index) in inBoundsGwList"
-                      :key="item.id"
-                      :icon="{url:require(item.online ? '../../../assets/images/gw_green.png' : '../../../assets/images/gw_red.png'),size:{width:25,height:25}}"
-                      :position="{lng: item.lng, lat: item.lat}"
-                      @click="onClickGwEntity($event, index)"
-                    />
-
-                    <!-- 网关详情 -->
-                    <bm-info-window
-                      v-if="gwInfoWindow.show"
-                      :position="{lng: gwInfoWindow.lng, lat: gwInfoWindow.lat}"
-                      title=" "
-                      :show="gwInfoWindow.show"
-                      :width="360"
-                      @close="onGwInIfoWindowClose"
-                      @open="onGwInIfoWindowOpen"
-                    >
-                      <p>网关编号: &nbsp;&nbsp;{{ gwInfoWindow.gatewayID }}</p>
-                      <p>当前状态: &nbsp;&nbsp;{{ new Date(((gwInfoWindow.online ? gwInfoWindow.lastShowTimeBegin : gwInfoWindow.lastOfftime) + 28800000)).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/') }}  至今{{ gwInfoWindow.online ? '在线': '离线' }} </p>
-                      <p>网关位置: &nbsp;&nbsp;{{ gwInfoWindow.location }}</p>
-                      <p>抄通数量: &nbsp;&nbsp;{{ gwInfoWindow.throughNum }}</p>
-                      <p>直线距离: &nbsp;&nbsp;{{ gwInfoWindow.distance }}米</p>
-                    </bm-info-window>
-                    <bm-point-collection :points="inBoundsGwList" shape="BMAP_POINT_SHAPE_STAR" color="red" size="BMAP_POINT_SIZE_SMALL" />
-                  </baidu-map>
-                </el-col>
-
-                <el-col v-if="community" :span="24" style="margin-bottom:15px;">
-                  <template>
-                    <el-col v-if="community" :span="24" style="margin-bottom:15px;">
-                      <div ref="meterNumStatisticDiv" style="height:60px;width:100%" />
-                    </el-col>
-                  </template>
-                </el-col>
-
-                <el-col v-if="community" :span="24" style="margin-bottom:15px;">
-                  <template>
-                    <el-col v-if="community" :span="24" style="margin-bottom:15px;">
-                      <div ref="meterRateDiv" style="height:450px;width:100%" />
-                    </el-col>
-                  </template>
-                </el-col>
-
-                <el-col v-if="community" :span="24" style="margin-bottom:15px;">
-                  <el-table
-                    v-if="missedMeterByMeterNo"
-                    :data="missedMeterByMeterNo"
-                    border
-                    fit
-                    highlight-current-row
-                    style="width: 100%;"
-                    height="598"
-                    :show-summary="true"
-                    :default-sort="{prop: 'totalNum', order: 'descending'}"
-                    :summary-method="getMissedMeterSummaries"
-                  >
-                    <el-table-column fixed label="序号" width="60px" prop="id" align="center">
-                      <template slot-scope="{$index}">
-                        <span>{{ $index + 1 }}</span>
-                      </template>
-                    </el-table-column>
-
-                    <el-table-column fixed label="表号" min-width="95px" prop="meterNo" sortable align="center">
-                      <template slot-scope="{row}">
-                        <span>{{ row.meterNo }}</span>
-                      </template>
-                    </el-table-column>
-
-                    <el-table-column label="次数" min-width="75px" prop="totalNum" sortable align="center">
-                      <template slot-scope="{row}">
-                        <span>{{ row.total }}</span>
-                      </template>
-                    </el-table-column>
-
-                    <el-table-column v-for="(item, dindex) in dateArray" :key="dindex" :label="item.substr(5,5)" min-width="60px" align="center">
-                      <template slot-scope="{row}">
-                        <el-progress :show-text="false" :stroke-width="24" :percentage="100" :status="row.map[dindex] ? 'exception' : 'success'" />
-                      </template>
-                    </el-table-column>
-                  </el-table>
-                </el-col>
-
-              </el-form>
-            </div>
-          </el-card>
+            <el-table-column v-for="(item, dindex) in dateArray" :key="dindex" :label="item.substr(5,5)" min-width="60px" align="center">
+              <template slot-scope="{row}">
+                <el-progress :show-text="false" :stroke-width="24" :percentage="100" :status="row.map[dindex] ? 'exception' : 'success'" />
+              </template>
+            </el-table-column>
+          </el-table>
         </el-row>
       </el-tab-pane>
 
       <el-tab-pane label="故障统计" name="stastics">
+        <el-row v-if="community" v-loading="loadingAbnormalList" style="margin-bottom:15px;">
+          <el-date-picker
+            v-model="timeRange"
+            type="daterange"
+            align="right"
+            unlink-panels
+            range-separator="~"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            :picker-options="pickerOptions"
+          />
+        </el-row>
 
-        <el-row v-loading="dataLoading">
-          <el-card class="box-card">
-            <div style="margin-bottom:50px;">
-              <el-form label-width="80px">
+        <el-row v-if="community" v-loading="loadingAbnormalList" style="margin-bottom:15px;">
+          <el-table
+            v-if="abnormalList"
+            :data="abnormalList.list"
+            border
+            fit
+            highlight-current-row
+            style="width: 100%;"
+          >
+            <el-table-column label="序号" width="60px" align="center">
+              <template slot-scope="{$index}">
+                <span>{{ $index + 1 }}</span>
+              </template>
+            </el-table-column>
 
-                <el-form-item label="小区名称">
-                  <el-col :xs="{span: 24}" :sm="{span: 6}" :md="{span: 5}" :lg="{span: 4}" :xl="{span: 4}">
-                    <el-select v-if="communityList" v-model="inputName" filterable placeholder="请选择小区" @change="handleSelectCommunity">
-                      <el-option v-for="item in communityList" :key="item.boroughId" :label="item.boroughName" :value="item.boroughId" />
-                    </el-select>
-                  </el-col>
-                </el-form-item>
+            <el-table-column label="户主信息" align="center">
+              <el-table-column label="楼栋" min-width="60px" align="center" show-overflow-tooltip>
+                <template slot-scope="{row}">
+                  <span>{{ row.c_BuildingName }}</span>
+                </template>
+              </el-table-column>
 
-                <el-col v-if="community" v-loading="loadingAbnormalList" :span="24" style="margin-bottom:15px;">
-                  <el-date-picker
-                    v-model="timeRange"
-                    type="daterange"
-                    align="right"
-                    unlink-panels
-                    range-separator="~"
-                    start-placeholder="开始日期"
-                    end-placeholder="结束日期"
-                    :picker-options="pickerOptions"
-                  />
-                </el-col>
+              <el-table-column label="单元" min-width="60px" align="center" show-overflow-tooltip>
+                <template slot-scope="{row}">
+                  <span>{{ row.i_cell }}</span>
+                </template>
+              </el-table-column>
 
-                <el-col v-if="community" v-loading="loadingAbnormalList" :span="24" style="margin-bottom:15px;">
-                  <el-table
-                    v-if="abnormalList"
-                    :data="abnormalList.list"
-                    border
-                    fit
-                    highlight-current-row
-                    style="width: 100%;"
-                  >
-                    <el-table-column label="序号" width="60px" align="center">
-                      <template slot-scope="{$index}">
-                        <span>{{ $index + 1 }}</span>
-                      </template>
-                    </el-table-column>
+              <el-table-column label="房间" min-width="60px" align="center">
+                <template slot-scope="{row}">
+                  <span>{{ row.c_roomnum }}</span>
+                </template>
+              </el-table-column>
 
-                    <el-table-column label="户主信息" align="center">
-                      <el-table-column label="楼栋" min-width="60px" align="center" show-overflow-tooltip>
-                        <template slot-scope="{row}">
-                          <span>{{ row.c_BuildingName }}</span>
-                        </template>
-                      </el-table-column>
+              <el-table-column label="户主" min-width="60px" align="center" show-overflow-tooltip>
+                <template slot-scope="{row}">
+                  <span>{{ row.c_ownername }}</span>
+                </template>
+              </el-table-column>
 
-                      <el-table-column label="单元" min-width="60px" align="center" show-overflow-tooltip>
-                        <template slot-scope="{row}">
-                          <span>{{ row.i_cell }}</span>
-                        </template>
-                      </el-table-column>
+              <el-table-column label="卡号" min-width="60px" align="center">
+                <template slot-scope="{row}">
+                  <span>{{ row.c_cardnum }}</span>
+                </template>
+              </el-table-column>
 
-                      <el-table-column label="房间" min-width="60px" align="center">
-                        <template slot-scope="{row}">
-                          <span>{{ row.c_roomnum }}</span>
-                        </template>
-                      </el-table-column>
+              <el-table-column label="表号" min-width="60px" align="center">
+                <template slot-scope="{row}">
+                  <span>{{ row.meterno }}</span>
+                </template>
+              </el-table-column>
+            </el-table-column>
 
-                      <el-table-column label="户主" min-width="60px" align="center" show-overflow-tooltip>
-                        <template slot-scope="{row}">
-                          <span>{{ row.c_ownername }}</span>
-                        </template>
-                      </el-table-column>
+            <el-table-column label="计量信息" align="center">
+              <el-table-column label="累计热量" min-width="60px" align="center">
+                <template slot-scope="{row}">
+                  <span>{{ row.totalHeat }}</span>
+                </template>
+              </el-table-column>
 
-                      <el-table-column label="卡号" min-width="60px" align="center">
-                        <template slot-scope="{row}">
-                          <span>{{ row.c_cardnum }}</span>
-                        </template>
-                      </el-table-column>
+              <el-table-column label="累计流量" min-width="60px" align="center">
+                <template slot-scope="{row}">
+                  <span>{{ row.totalFlow }}</span>
+                </template>
+              </el-table-column>
 
-                      <el-table-column label="表号" min-width="60px" align="center">
-                        <template slot-scope="{row}">
-                          <span>{{ row.meterno }}</span>
-                        </template>
-                      </el-table-column>
-                    </el-table-column>
+              <el-table-column label="流速" min-width="60px" align="center">
+                <template slot-scope="{row}">
+                  <span>{{ row.flowRate }}</span>
+                </template>
+              </el-table-column>
 
-                    <el-table-column label="计量信息" align="center">
-                      <el-table-column label="累计热量" min-width="60px" align="center">
-                        <template slot-scope="{row}">
-                          <span>{{ row.totalHeat }}</span>
-                        </template>
-                      </el-table-column>
+              <el-table-column label="功率" min-width="75px" align="center">
+                <template slot-scope="{row}">
+                  <span>{{ row.power }}</span>
+                </template>
+              </el-table-column>
 
-                      <el-table-column label="累计流量" min-width="60px" align="center">
-                        <template slot-scope="{row}">
-                          <span>{{ row.totalFlow }}</span>
-                        </template>
-                      </el-table-column>
+              <el-table-column label="供水" min-width="75px" align="center">
+                <template slot-scope="{row}">
+                  <span>{{ row.supplyTemp }}</span>
+                </template>
+              </el-table-column>
 
-                      <el-table-column label="流速" min-width="60px" align="center">
-                        <template slot-scope="{row}">
-                          <span>{{ row.flowRate }}</span>
-                        </template>
-                      </el-table-column>
+              <el-table-column label="回水" min-width="75px" align="center">
+                <template slot-scope="{row}">
+                  <span>{{ row.returnTemp }}</span>
+                </template>
+              </el-table-column>
 
-                      <el-table-column label="功率" min-width="75px" align="center">
-                        <template slot-scope="{row}">
-                          <span>{{ row.power }}</span>
-                        </template>
-                      </el-table-column>
+              <el-table-column label="温差" min-width="75px" align="center">
+                <template slot-scope="{row}">
+                  <span>{{ row.wdc }}</span>
+                </template>
+              </el-table-column>
 
-                      <el-table-column label="供水" min-width="75px" align="center">
-                        <template slot-scope="{row}">
-                          <span>{{ row.supplyTemp }}</span>
-                        </template>
-                      </el-table-column>
+              <el-table-column label="抄表时间" min-width="75px" align="center" show-overflow-tooltip>
+                <template slot-scope="{row}">
+                  <span>{{ row.receiveTime | filterTimestamp }}</span>
+                </template>
+              </el-table-column>
+            </el-table-column>
 
-                      <el-table-column label="回水" min-width="75px" align="center">
-                        <template slot-scope="{row}">
-                          <span>{{ row.returnTemp }}</span>
-                        </template>
-                      </el-table-column>
-
-                      <el-table-column label="温差" min-width="75px" align="center">
-                        <template slot-scope="{row}">
-                          <span>{{ row.wdc }}</span>
-                        </template>
-                      </el-table-column>
-
-                      <el-table-column label="抄表时间" min-width="75px" align="center" show-overflow-tooltip>
-                        <template slot-scope="{row}">
-                          <span>{{ row.receiveTime | filterTimestamp }}</span>
-                        </template>
-                      </el-table-column>
-                    </el-table-column>
-
-                  </el-table>
-                  <pagination
-                    v-if="abnormalList"
-                    v-show="abnormalList.total>0"
-                    :total="abnormalList.total"
-                    :page.sync="listQuery.page"
-                    :limit.sync="listQuery.size"
-                    :page-sizes="[15, 30, 50, 100]"
-                    @pagination="handleFilter"
-                  />
-                </el-col>
-
-              </el-form>
-            </div>
-          </el-card>
+          </el-table>
+          <pagination
+            v-if="abnormalList"
+            v-show="abnormalList.total>0"
+            :total="abnormalList.total"
+            :page.sync="listQuery.page"
+            :limit.sync="listQuery.size"
+            :page-sizes="[15, 30, 50, 100]"
+            @pagination="handleFilter"
+          />
         </el-row>
       </el-tab-pane>
     </el-tabs>
@@ -381,7 +297,7 @@ export default {
   mixins: [resize],
   data() {
     return {
-      activeName: 'summary',
+      activeName: 'meter',
       dataLoading: true,
 
       boroughId: null,
@@ -404,6 +320,7 @@ export default {
 
       missedMeterByMeterNo: null,
       missedMeterByMeterSummary: null,
+      loadingMeterRateData: true,
 
       // 故障统计相关
       pickerOptions: {
@@ -505,7 +422,12 @@ export default {
         return v
       })
       this.communityList.sort(this.compare('boroughId', 'ascending'))
-      this.dataLoading = false
+      if (this.communityList && this.gatewayList) {
+        // Just to simulate the time of the request
+        setTimeout(() => {
+          this.dataLoading = false
+        }, 0.1 * 1000)
+      }
     }).catch(error => {
       this.$message('获取小区信息失败，' + error)
       console.log('获取小区信息失败，' + error)
@@ -515,9 +437,16 @@ export default {
     // 获取网关清单
     getGatewayInfo().then(response => {
       this.gatewayList = response.data.list
+      if (this.communityList && this.gatewayList) {
+        // Just to simulate the time of the request
+        setTimeout(() => {
+          this.dataLoading = false
+        }, 0.1 * 1000)
+      }
     }).catch(error1 => {
       this.$message('获取网关信息失败，' + error1)
       console.log('获取网关信息失败，' + error1)
+      this.dataLoading = false
     })
   },
 
@@ -686,10 +615,8 @@ export default {
       this.updateInBoundsGwList()
 
       // 获取小区抄通率详细信息
-      this.dataLoading = true
+      this.loadingMeterRateData = true
       getSingeCommunityDetailInfo(this.inputName).then(response => {
-        this.dataLoading = false
-
         // 填充未抄通表号到missedMeterByMeterNo中
         var temObj = []
         var tempSummary = [0] // 0,合计，1~7依次为每天没抄通个数
@@ -728,10 +655,15 @@ export default {
 
         console.log(response.data[0])
         console.log(index, this.community, this.communityList[index], this.missedMeterByMeterNo)
+
+        // Just to simulate the time of the request
+        setTimeout(() => {
+          this.loadingMeterRateData = false
+        }, 0.1 * 1000)
       }).catch(error => {
         this.$message.error('获取小区抄通率详情失败，' + error)
         console.log('获取小区抄通率详情失败，' + error)
-        this.dataLoading = false
+        this.loadingMeterRateData = false
       })
 
       this.handleFilter()
@@ -985,9 +917,12 @@ export default {
       // 获取故障统计
       this.loadingAbnormalList = true
       getCommunityAbnormalInfo(this.boroughId, this.listQuery).then(response => {
-        this.loadingAbnormalList = false
         this.abnormalList = response.data
         console.log(this.abnormalList)
+        // Just to simulate the time of the request
+        setTimeout(() => {
+          this.loadingAbnormalList = false
+        }, 0.1 * 1000)
       }).catch(error => {
         this.loadingAbnormalList = false
         this.$message.error('获取小区故障列表失败，' + error)
