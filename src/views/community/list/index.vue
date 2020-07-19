@@ -1,60 +1,62 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-autocomplete
-        ref="input"
-        v-model="listQuery.inputName"
-        :fetch-suggestions="nameSuggestions"
-        :select-when-unmatched="true"
-        class="filter-item"
-        clearable
-        placeholder="请输入小区名"
-        style="margin-right:30px;"
-        @select="handleInputName"
-        @clear="handleClearName"
-      />
-
-      <div class="filter-item" style="margin-right:30px;">
-        <div style="display:flex;flex:1;font-size:14px;color:#606266;">
-          <span style="margin-right:15px;line-height:40px">7日抄通率:</span>
-          <el-slider
-            v-model="listQuery.meterRateRange"
-            style="width:160px"
-            range
+      <el-row style="margin-bottom:15px;">
+        <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 19}" :lg="{span: 19}" :xl="{span: 19}">
+          <el-autocomplete
+            ref="input"
+            v-model="listQuery.inputName"
+            :fetch-suggestions="nameSuggestions"
+            :select-when-unmatched="true"
+            class="filter-item"
+            clearable
+            placeholder="请输入小区名"
+            style="margin-right:30px;"
+            @select="handleInputName"
+            @clear="handleClearName"
           />
-        </div>
-      </div>
 
-      <el-switch
-        v-model="showMissedMeterNum"
-        class="filter-item"
-        style="margin-right:30px;"
-        inactive-color="#13ce66"
-        active-color="#ff4949"
-        inactive-text="抄通"
-        active-text="未抄通"
-        @change="tableKey=tableKey+1"
-      />
+          <div class="filter-item" style="margin-right:30px;">
+            <div style="display:flex;flex:1;font-size:14px;color:#606266;">
+              <span style="margin-right:15px;line-height:40px">7日抄通率:</span>
+              <el-slider
+                v-model="listQuery.meterRateRange"
+                style="width:160px"
+                range
+              />
+            </div>
+          </div>
 
-      <el-checkbox v-model="showPrecent" class="filter-item" style="margin-right:30px;" @change="tableKey=tableKey+1">
-        显示百分比
-      </el-checkbox>
+          <el-switch
+            v-model="showMissedMeterNum"
+            class="filter-item"
+            style="margin-right:30px;"
+            inactive-color="#13ce66"
+            active-color="#ff4949"
+            inactive-text="抄通"
+            active-text="未抄通"
+            @change="tableKey=tableKey+1"
+          />
 
-      <el-checkbox v-model="showMeterRateHis" class="filter-item" style="margin-right:30px;" @change="tableKey=tableKey+1">
-        显示每日抄通率
-      </el-checkbox>
+          <el-checkbox v-model="showPrecent" class="filter-item" style="margin-right:30px;" @change="tableKey=tableKey+1">
+            显示百分比
+          </el-checkbox>
 
-      <el-checkbox v-model="showDescription" class="filter-item" style="margin-right:30px;" @change="tableKey=tableKey+1">
-        显示备注
-      </el-checkbox>
+          <el-checkbox v-model="showMeterRateHis" class="filter-item" style="margin-right:30px;" @change="tableKey=tableKey+1">
+            显示每日抄通率
+          </el-checkbox>
 
-      <el-button v-waves style="margin-right:30px;" class="pan-btn blue-btn" type="primary" icon="el-icon-close" @click="handleReset">
-        重置
-      </el-button>
+          <el-checkbox v-model="showDescription" class="filter-item" style="margin-right:30px;" @change="tableKey=tableKey+1">
+            显示备注
+          </el-checkbox>
+        </el-col>
 
-      <el-button v-waves :loading="downloadLoading" style="margin-right:30px;" class="pan-btn green-btn" type="primary" icon="el-icon-download" @click="handleDownload">
-        导出
-      </el-button>
+        <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 5}" :lg="{span: 5}" :xl="{span: 5}" align="right">
+          <el-button v-waves type="warning" icon="el-icon-refresh" @click="handleReset">重置</el-button>
+          <el-button v-waves :loading="downloadLoading" type="primary" icon="el-icon-download" @click="handleDownload">导出</el-button>
+        </el-col>
+
+      </el-row>
     </div>
 
     <el-table

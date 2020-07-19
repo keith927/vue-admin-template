@@ -2,106 +2,105 @@
   <div class="app-container">
     <el-row v-loading="dataLoading" style="margin-bottom:50px;">
       <el-card class="box-card">
-        <div style="margin-bottom:50px;">
-          <el-form label-width="40px">
+        <el-form label-width="40px">
+          <el-row>
+            <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 12}" :xl="{span: 12}">
+              <el-form-item label="名称">
+                <el-select v-if="communityList" v-model="inputName" filterable placeholder="请选择小区" style="width:100%" @change="handleSelectCommunity">
+                  <el-option v-for="item in communityList" :key="item.boroughId" :label="item.boroughName" :value="item.boroughId" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
 
-            <el-row style="margin-bottom:15px;">
-              <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 12}" :xl="{span: 12}">
-                <el-form-item label="名称">
-                  <el-select v-if="communityList" v-model="inputName" filterable placeholder="请选择小区" style="width:100%" @change="handleSelectCommunity">
-                    <el-option v-for="item in communityList" :key="item.boroughId" :label="item.boroughName" :value="item.boroughId" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-            </el-row>
+          <el-row v-if="community" style="margin-top:15px;">
+            <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 12}" :xl="{span: 12}">
+              <el-form-item label="描述">
+                <el-input v-model="community.remark" :disabled="!canModify" clearable style="width:100%" />
+              </el-form-item>
+            </el-col>
 
-            <el-row v-if="community" style="margin-bottom:15px;">
-              <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 12}" :xl="{span: 12}">
-                <el-form-item label="描述">
-                  <el-input v-model="community.remark" :disabled="!canModify" clearable style="width:100%" />
-                </el-form-item>
-              </el-col>
+            <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 12}" :xl="{span: 12}" align="right">
+              <el-button v-if="!canModify" v-waves icon="el-icon-edit" type="primary" @click="setModifyStatus">修改</el-button>
+              <el-button v-if="canModify" v-waves icon="el-icon-circle-check" type="success" @click="onSubmitCommunityInfo">提交</el-button>
+              <el-button v-waves icon="el-icon-refresh" type="warning" @click="onCancelCommunityInfo">取消</el-button>
+            </el-col>
+          </el-row>
+        </el-form>
 
-              <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 12}" :xl="{span: 12}" align="right">
-                <el-button v-if="!canModify" icon="el-icon-edit" type="primary" @click="setModifyStatus">修改</el-button>
-                <el-button v-if="canModify" icon="el-icon-circle-check" type="success" @click="onSubmitCommunityInfo">提交</el-button>
-                <el-button icon="el-icon-refresh" type="warning" @click="onCancelCommunityInfo">取消</el-button>
-              </el-col>
-            </el-row>
+        <el-row v-if="community" style="margin-top:15px;">
+          <baidu-map
+            style="height:450px;"
+            :center="mapCenter"
+            :zoom="mapZoom"
+            :max-zoom="18"
+            :min-zoom="8"
+            :map-click="false"
+            :double-click-zoom="false"
+            :dragging="canModify"
+            :scroll-wheel-zoom="canModify"
+            @ready="onMapReady"
+            @resize="onMapResize"
+            @dblclick="setCommunityLocation"
+          >
+            <bm-navigation anchor="BMAP_ANCHOR_TOP_LEFT" />
+            <bm-map-type :map-types="['BMAP_NORMAL_MAP', 'BMAP_HYBRID_MAP']" anchor="BMAP_ANCHOR_TOP_RIGHT" />
+            <bm-scale anchor="BMAP_ANCHOR_BOTTOM_LEFT" />
+            <bm-control :offset="{width: 70, height: 10}">
+              <el-tooltip class="item" effect="dark" content="搜索地图" placement="top-start">
+                <el-input v-model="searchKeyword" placeholder="请输入地图搜索条件" clearable :disabled="!canModify">
+                  <i slot="prefix" class="el-input__icon el-icon-search" />
+                </el-input>
+              </el-tooltip>
+            </bm-control>
+            <bm-marker v-if="map" :position="mapCenter" :dragging="canModify" @dragend="setCommunityLocation" />
+            <bm-local-search v-if="canModify" :keyword="searchKeyword" :auto-viewport="true" :panel="false" :select-first-result="true" location="开封" />
 
-            <el-row v-if="community" style="margin-bottom:15px;">
-              <baidu-map
-                style="height:450px;"
-                :center="mapCenter"
-                :zoom="mapZoom"
-                :max-zoom="18"
-                :min-zoom="8"
-                :map-click="false"
-                :double-click-zoom="false"
-                :dragging="canModify"
-                :scroll-wheel-zoom="canModify"
-                @ready="onMapReady"
-                @resize="onMapResize"
-                @dblclick="setCommunityLocation"
-              >
-                <bm-navigation anchor="BMAP_ANCHOR_TOP_LEFT" />
-                <bm-map-type :map-types="['BMAP_NORMAL_MAP', 'BMAP_HYBRID_MAP']" anchor="BMAP_ANCHOR_TOP_RIGHT" />
-                <bm-scale anchor="BMAP_ANCHOR_BOTTOM_LEFT" />
-                <bm-control :offset="{width: 70, height: 10}">
-                  <el-tooltip class="item" effect="dark" content="搜索地图" placement="top-start">
-                    <el-input v-model="searchKeyword" placeholder="请输入地图搜索条件" clearable :disabled="!canModify">
-                      <i slot="prefix" class="el-input__icon el-icon-search" />
-                    </el-input>
-                  </el-tooltip>
-                </bm-control>
-                <bm-marker v-if="map" :position="mapCenter" :dragging="canModify" @dragend="setCommunityLocation" />
-                <bm-local-search v-if="canModify" :keyword="searchKeyword" :auto-viewport="true" :panel="false" :select-first-result="true" location="开封" />
+            <!-- 小区300米范围内网关信息 -->
+            <bm-marker
+              v-for="(item, index) in inBoundsGwList"
+              :key="item.id"
+              :icon="{url:require(item.online ? '../../../assets/images/gw_green.png' : '../../../assets/images/gw_red.png'),size:{width:25,height:25}}"
+              :position="{lng: item.lng, lat: item.lat}"
+              @click="onClickGwEntity($event, index)"
+            />
 
-                <!-- 小区300米范围内网关信息 -->
-                <bm-marker
-                  v-for="(item, index) in inBoundsGwList"
-                  :key="item.id"
-                  :icon="{url:require(item.online ? '../../../assets/images/gw_green.png' : '../../../assets/images/gw_red.png'),size:{width:25,height:25}}"
-                  :position="{lng: item.lng, lat: item.lat}"
-                  @click="onClickGwEntity($event, index)"
-                />
+            <!-- 网关详情 -->
+            <bm-info-window
+              v-if="gwInfoWindow.show"
+              :position="{lng: gwInfoWindow.lng, lat: gwInfoWindow.lat}"
+              title=" "
+              :show="gwInfoWindow.show"
+              :width="360"
+              @close="onGwInIfoWindowClose"
+              @open="onGwInIfoWindowOpen"
+            >
+              <p>网关编号: &nbsp;&nbsp;{{ gwInfoWindow.gatewayID }}</p>
+              <p>当前状态: &nbsp;&nbsp;{{ new Date(((gwInfoWindow.online ? gwInfoWindow.lastShowTimeBegin : gwInfoWindow.lastOfftime) + 28800000)).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/') }}  至今{{ gwInfoWindow.online ? '在线': '离线' }} </p>
+              <p>网关位置: &nbsp;&nbsp;{{ gwInfoWindow.location }}</p>
+              <p>抄通数量: &nbsp;&nbsp;{{ gwInfoWindow.throughNum }}</p>
+              <p>直线距离: &nbsp;&nbsp;{{ gwInfoWindow.distance }}米</p>
+            </bm-info-window>
+            <bm-point-collection :points="inBoundsGwList" shape="BMAP_POINT_SHAPE_STAR" color="red" size="BMAP_POINT_SIZE_SMALL" />
+          </baidu-map>
+        </el-row>
 
-                <!-- 网关详情 -->
-                <bm-info-window
-                  v-if="gwInfoWindow.show"
-                  :position="{lng: gwInfoWindow.lng, lat: gwInfoWindow.lat}"
-                  title=" "
-                  :show="gwInfoWindow.show"
-                  :width="360"
-                  @close="onGwInIfoWindowClose"
-                  @open="onGwInIfoWindowOpen"
-                >
-                  <p>网关编号: &nbsp;&nbsp;{{ gwInfoWindow.gatewayID }}</p>
-                  <p>当前状态: &nbsp;&nbsp;{{ new Date(((gwInfoWindow.online ? gwInfoWindow.lastShowTimeBegin : gwInfoWindow.lastOfftime) + 28800000)).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/') }}  至今{{ gwInfoWindow.online ? '在线': '离线' }} </p>
-                  <p>网关位置: &nbsp;&nbsp;{{ gwInfoWindow.location }}</p>
-                  <p>抄通数量: &nbsp;&nbsp;{{ gwInfoWindow.throughNum }}</p>
-                  <p>直线距离: &nbsp;&nbsp;{{ gwInfoWindow.distance }}米</p>
-                </bm-info-window>
-                <bm-point-collection :points="inBoundsGwList" shape="BMAP_POINT_SHAPE_STAR" color="red" size="BMAP_POINT_SIZE_SMALL" />
-              </baidu-map>
-            </el-row>
+        <el-row v-if="community" style="margin-top:15px;">
+          <div ref="meterNumStatisticDiv" style="height:60px;width:100%" />
+        </el-row>
 
-            <el-row v-if="community" style="margin-bottom:15px;">
-              <div ref="meterNumStatisticDiv" style="height:60px;width:100%" />
-            </el-row>
-
-          </el-form>
-        </div>
       </el-card>
     </el-row>
 
-    <el-tabs v-model="activeName" style="padding-top:15px;" @tab-click="handleTabClick">
-      <el-tab-pane label="抄通情况" name="meter">
-        <el-row v-if="community" v-loading="loadingMeterRateData" style="margin-bottom:15px;">
+    <el-tabs v-if="community" v-model="activeName" style="padding-top:15px;" @tab-click="handleTabClick">
+      <el-tab-pane name="meter">
+        <span slot="label"><i class="el-icon-finished" /> 抄通情况</span>
+
+        <el-row v-loading="loadingMeterRateData" style="margin-bottom:15px;">
           <div ref="meterRateDiv" style="height:450px;width:100%" />
         </el-row>
 
-        <el-row v-if="community" v-loading="loadingMeterRateData" style="margin-bottom:15px;">
+        <el-row v-loading="loadingMeterRateData" style="margin-bottom:15px;">
           <el-table
             v-if="missedMeterByMeterNo"
             :data="missedMeterByMeterNo"
@@ -141,8 +140,10 @@
         </el-row>
       </el-tab-pane>
 
-      <el-tab-pane label="故障统计" name="stastics">
-        <el-row v-if="community" v-loading="loadingAbnormalList" style="margin-bottom:15px;">
+      <el-tab-pane name="stastics">
+        <span slot="label"><i class="el-icon-warning-outline" /> 故障统计</span>
+
+        <el-row v-loading="loadingAbnormalList" style="margin-bottom:15px;">
           <el-date-picker
             v-model="timeRange"
             type="daterange"
@@ -155,7 +156,7 @@
           />
         </el-row>
 
-        <el-row v-if="community" v-loading="loadingAbnormalList" style="margin-bottom:15px;">
+        <el-row v-loading="loadingAbnormalList" style="margin-bottom:15px;">
           <el-table
             v-if="abnormalList"
             :data="abnormalList.list"
