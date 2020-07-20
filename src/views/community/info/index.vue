@@ -11,6 +11,15 @@
                 </el-select>
               </el-form-item>
             </el-col>
+
+            <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 12}" :xl="{span: 12}" align="right">
+              <el-tooltip class="item" effect="dark" content="上个小区" placement="top-start">
+                <el-button v-waves icon="el-icon-arrow-left" type="primary" style="width:89px" :disabled="(dataLoading || loadingMeterRateData || loadingAbnormalList)" @click="showPrevCommunity" />
+              </el-tooltip>
+              <el-tooltip class="item" effect="dark" content="下个小区" placement="top-start">
+                <el-button v-waves icon="el-icon-arrow-right" type="primary" style="width:89px" :disabled="(dataLoading || loadingMeterRateData || loadingAbnormalList)" @click="showNextCommunity" />
+              </el-tooltip>
+            </el-col>
           </el-row>
 
           <el-row v-if="community" style="margin-top:15px;">
@@ -21,9 +30,13 @@
             </el-col>
 
             <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 12}" :xl="{span: 12}" align="right">
-              <el-button v-if="!canModify" v-waves icon="el-icon-edit" type="primary" @click="setModifyStatus">修改</el-button>
-              <el-button v-if="canModify" v-waves icon="el-icon-circle-check" type="success" @click="onSubmitCommunityInfo">提交</el-button>
-              <el-button v-waves icon="el-icon-refresh" type="warning" @click="onCancelCommunityInfo">取消</el-button>
+              <el-tooltip class="item" effect="dark" content="修改小区描述和经纬度" placement="top-start">
+                <el-button v-if="!canModify" v-waves icon="el-icon-edit" type="primary" :disabled="dataLoading" @click="setModifyStatus">修改</el-button>
+                <el-button v-if="canModify" v-waves icon="el-icon-circle-check" type="success" :disabled="dataLoading " @click="onSubmitCommunityInfo">提交</el-button>
+              </el-tooltip>
+              <el-tooltip class="item" effect="dark" content="重置为已保存数据" placement="top-start">
+                <el-button v-waves icon="el-icon-refresh" type="warning" @click="onCancelCommunityInfo">取消</el-button>
+              </el-tooltip>
             </el-col>
           </el-row>
         </el-form>
@@ -668,6 +681,38 @@ export default {
       })
 
       this.handleFilter()
+    },
+
+    // 查看前一个小区
+    showPrevCommunity() {
+      var id = null
+      if (this.boroughId === 1) {
+        id = this.communityList[this.communityList.length - 1].boroughId
+      } else {
+        for (var index = 0; index < this.communityList.length; index++) {
+          if (this.communityList[index].boroughId >= this.boroughId) {
+            id = this.communityList[index - 1].boroughId
+            break
+          }
+        }
+      }
+      this.handleSelectCommunity(id)
+    },
+
+    // 查看后一个小区
+    showNextCommunity() {
+      var id = null
+      if (this.boroughId === this.communityList[this.communityList.length - 1].boroughId) {
+        id = 1
+      } else {
+        for (var index = 0; index < this.communityList.length; index++) {
+          if (this.communityList[index].boroughId >= this.boroughId) {
+            id = this.communityList[index + 1].boroughId
+            break
+          }
+        }
+      }
+      this.handleSelectCommunity(id)
     },
 
     // 点击网关图标事件
