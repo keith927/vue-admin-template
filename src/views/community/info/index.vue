@@ -628,6 +628,11 @@ export default {
       // 更新周边网关信息
       this.updateInBoundsGwList()
 
+      // 更新小区用户数量数据
+      this.$nextTick(function() {
+        this.setMeterNumStatisticOptions(this.community)
+      })
+
       // 获取小区抄通率详细信息
       this.loadingMeterRateData = true
       getSingeCommunityDetailInfo(this.inputName).then(response => {
@@ -657,14 +662,9 @@ export default {
         this.missedMeterByMeterNo = tempList
         this.missedMeterByMeterSummary = tempSummary
 
-        // 更新用户数量数据
+        // 更新抄通率数据
         this.community.sevenThrough = response.data[0].sevenThrough
         this.community.sevenThroughRate = response.data[0].sevenThroughRate
-        this.community.totalValidMeternoNum = response.data[0].totalValidMeternoNum
-        this.community.totalCardNum = response.data[0].totalCardNum
-        this.community.meternoIsZero = response.data[0].meternoIsZero
-        this.community.totalMeter = response.data[0].totalMeter
-        this.setMeterNumStatisticOptions(this.community)
         this.setMeterRateOptions(this.community)
 
         console.log(response.data[0])
