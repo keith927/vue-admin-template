@@ -85,13 +85,13 @@ export const constantRoutes = [
             path: 'summary',
             name: 'Summary',
             component: () => import('@/views/community/list/index'),
-            meta: { title: '概览', icon: 'table' }
+            meta: { title: '小区概览', icon: 'table' }
           },
           {
             path: 'info',
             name: 'Info',
             component: () => import('@/views/community/info/index'),
-            meta: { title: '详情', icon: 'table' }
+            meta: { title: '小区详情', icon: 'table' }
           }
         ]
       }
