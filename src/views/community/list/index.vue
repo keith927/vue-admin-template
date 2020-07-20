@@ -327,6 +327,7 @@ export default {
       const { prop, order } = data
       this.listQuery.sort = prop
       this.listQuery.order = order
+      this.handleFilter()
     },
     handleReset() {
       this.listQuery = {
