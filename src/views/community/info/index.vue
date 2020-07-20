@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-row v-loading="dataLoading" style="margin-bottom:50px;">
+    <el-row v-loading.lock="dataLoading" style="margin-bottom:50px;">
       <el-card class="box-card">
         <el-form label-width="40px">
           <el-row>
@@ -58,7 +58,7 @@
           >
             <bm-navigation anchor="BMAP_ANCHOR_TOP_LEFT" />
             <bm-map-type :map-types="['BMAP_NORMAL_MAP', 'BMAP_HYBRID_MAP']" anchor="BMAP_ANCHOR_TOP_RIGHT" />
-            <bm-scale anchor="BMAP_ANCHOR_BOTTOM_LEFT" />
+            <bm-scale anchor="BMAP_ANCHOR_TOP_RIGHT" :offset="{width: 100, height: 5}" />
             <bm-control :offset="{width: 70, height: 10}">
               <el-tooltip class="item" effect="dark" content="搜索地图" placement="top-start">
                 <el-input v-model="searchKeyword" placeholder="请输入地图搜索条件" clearable :disabled="!canModify">
@@ -105,7 +105,7 @@
       </el-card>
     </el-row>
 
-    <el-tabs v-if="community" v-model="activeName" style="padding-top:15px;" @tab-click="handleTabClick">
+    <el-tabs v-if="community" v-model="activeName" type="card" style="padding-top:15px;" @tab-click="handleTabClick">
       <el-tab-pane name="meter">
         <span slot="label"><i class="el-icon-finished" /> 抄通情况</span>
 
@@ -440,7 +440,7 @@ export default {
         // Just to simulate the time of the request
         setTimeout(() => {
           this.dataLoading = false
-        }, 0.1 * 1000)
+        }, 0.5 * 1000)
       }
     }).catch(error => {
       this.$message('获取小区信息失败，' + error)
@@ -455,7 +455,7 @@ export default {
         // Just to simulate the time of the request
         setTimeout(() => {
           this.dataLoading = false
-        }, 0.1 * 1000)
+        }, 0.5 * 1000)
       }
     }).catch(error1 => {
       this.$message('获取网关信息失败，' + error1)
@@ -985,4 +985,9 @@ export default {
     padding: 0px!important;
   }
 }
+
+.anchorBL{
+  display:none;
+}
+
 </style>
