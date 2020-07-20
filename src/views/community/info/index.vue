@@ -58,7 +58,7 @@
           >
             <bm-navigation anchor="BMAP_ANCHOR_TOP_LEFT" />
             <bm-map-type :map-types="['BMAP_NORMAL_MAP', 'BMAP_HYBRID_MAP']" anchor="BMAP_ANCHOR_TOP_RIGHT" />
-            <bm-scale anchor="BMAP_ANCHOR_TOP_RIGHT" :offset="{width: 100, height: 5}" />
+            <bm-scale anchor="BMAP_ANCHOR_TOP_RIGHT" :offset="{width: 100, height: 8}" />
             <bm-control :offset="{width: 70, height: 10}">
               <el-tooltip class="item" effect="dark" content="搜索地图" placement="top-start">
                 <el-input v-model="searchKeyword" placeholder="请输入地图搜索条件" clearable :disabled="!canModify">
@@ -94,7 +94,6 @@
               <p>抄通数量: &nbsp;&nbsp;{{ gwInfoWindow.throughNum }}</p>
               <p>直线距离: &nbsp;&nbsp;{{ gwInfoWindow.distance }}米</p>
             </bm-info-window>
-            <bm-point-collection :points="inBoundsGwList" shape="BMAP_POINT_SHAPE_STAR" color="red" size="BMAP_POINT_SIZE_SMALL" />
           </baidu-map>
         </el-row>
 
@@ -759,7 +758,7 @@ export default {
       var compensateVal = oriSerialData.map(v => { return v ? num : 0 })
       var xAxisMax = community.totalCardNum + compensateVal[0] + compensateVal[1] + compensateVal[2]
       var selected = { '表号正常': (oriSerialData[0] !== 0), '表号为零': (oriSerialData[1] !== 0), '表号为空': (oriSerialData[2] !== 0) }
-      var formatterStr = '用户概况<br>' +
+      var formatterStr = community.boroughName + '<br>' +
                          '<span style="font-size:22px;color:' + color[0] + ';"> ● </span>表号正常: ' + oriSerialData[0] + '<br>' +
                          '<span style="font-size:22px;color:' + color[1] + ';"> ● </span>表号为零: ' + oriSerialData[1] + '<br>' +
                          '<span style="font-size:22px;color:' + color[2] + ';"> ● </span>表号为空: ' + oriSerialData[2]
@@ -792,7 +791,7 @@ export default {
           max: xAxisMax
         },
         yAxis: {
-          data: ['用户概况'],
+          data: [community.boroughName + '用户概况'],
           axisLine: {
             show: false
           }
@@ -869,8 +868,8 @@ export default {
       this.dateArray.forEach(d => {
         xAxisData.push(d.substr(5, 5))
         data0.push(community[d].through)
-        data1.push(community[d].throughRate * 100)
-        data2.push(community.sevenThroughRate * 100)
+        data1.push(Math.round(community[d].throughRate * 10000) / 100)
+        data2.push(Math.round(community.sevenThroughRate * 10000) / 100)
       })
 
       var option = {
@@ -894,7 +893,7 @@ export default {
             type: 'cross'
           },
           formatter: function(params) {
-            return params[0].axisValue + '<br>' +
+            return community.boroughName + ' ' + params[0].axisValue + '<br>' +
                    params[0].marker + params[0].seriesName + ': ' + data0[params[0].dataIndex] + ' (' + params[0].value + '%)<br>' +
                    params[1].marker + params[1].seriesName + ': ' + community.sevenThrough + ' (' + params[1].value + '%)<br>'
           }
@@ -988,6 +987,14 @@ export default {
 
 .anchorBL{
   display:none;
+}
+
+.BMap_scaleTxt{
+  color:lightgray !important;
+  text-align: center;
+  width: 100%;
+  cursor: default;
+  line-height: 18px;
 }
 
 </style>
