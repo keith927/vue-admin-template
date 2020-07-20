@@ -57,8 +57,9 @@
             @dblclick="setCommunityLocation"
           >
             <bm-navigation anchor="BMAP_ANCHOR_TOP_LEFT" />
-            <bm-map-type :map-types="['BMAP_NORMAL_MAP', 'BMAP_HYBRID_MAP']" anchor="BMAP_ANCHOR_TOP_RIGHT" />
-            <bm-scale anchor="BMAP_ANCHOR_TOP_RIGHT" :offset="{width: 100, height: 8}" />
+            <bm-panorama />
+            <bm-map-type :map-types="['BMAP_NORMAL_MAP', 'BMAP_HYBRID_MAP']" anchor="BMAP_ANCHOR_TOP_RIGHT" :offset="{width: 70, height: 10}" />
+            <bm-scale anchor="BMAP_ANCHOR_TOP_RIGHT" :offset="{width: 158, height: 7}" />
             <bm-control :offset="{width: 70, height: 10}">
               <el-tooltip class="item" effect="dark" content="搜索地图" placement="top-start">
                 <el-input v-model="searchKeyword" placeholder="请输入地图搜索条件" clearable :disabled="!canModify">
