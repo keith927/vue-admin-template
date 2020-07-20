@@ -145,7 +145,6 @@
       :page.sync="listQuery.page"
       :limit.sync="listQuery.limit"
       :page-sizes="[15, 50, 100, 300]"
-      @pagination="handleFilter"
     />
 
   </div>
@@ -216,6 +215,12 @@ export default {
     showMissedMeterNum: {
       handler(val) {
         this.lableSuffix = val ? '未抄通' : '抄通'
+      }
+    },
+    listQuery: {
+      deep: true,
+      handler(val) {
+        this.handleFilter()
       }
     }
   },
@@ -327,7 +332,6 @@ export default {
       const { prop, order } = data
       this.listQuery.sort = prop
       this.listQuery.order = order
-      this.handleFilter()
     },
     handleReset() {
       this.listQuery = {
