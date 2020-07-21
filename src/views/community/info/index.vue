@@ -34,8 +34,8 @@
                 <el-button v-if="!canModify" v-waves icon="el-icon-edit" type="primary" :disabled="dataLoading" @click="setModifyStatus">修改</el-button>
                 <el-button v-if="canModify" v-waves icon="el-icon-circle-check" type="success" :disabled="dataLoading " @click="onSubmitCommunityInfo">提交</el-button>
               </el-tooltip>
-              <el-tooltip class="item" effect="dark" content="重置为已保存数据" placement="top-start">
-                <el-button v-waves icon="el-icon-refresh" type="warning" @click="onCancelCommunityInfo">取消</el-button>
+              <el-tooltip class="item" effect="dark" content="重置地图和描述为已保存数据" placement="top-start">
+                <el-button v-waves icon="el-icon-refresh" type="warning" @click="onCancelCommunityInfo">重置</el-button>
               </el-tooltip>
             </el-col>
           </el-row>
@@ -50,8 +50,8 @@
             :min-zoom="8"
             :map-click="false"
             :double-click-zoom="false"
-            :dragging="canModify"
             :scroll-wheel-zoom="canModify"
+            :map-style="mapStyle"
             @ready="onMapReady"
             @resize="onMapResize"
             @dblclick="setCommunityLocation"
@@ -119,6 +119,7 @@
             :data="missedMeterByMeterNo"
             border
             fit
+            stripe
             highlight-current-row
             style="width: 100%;"
             height="598"
@@ -151,6 +152,84 @@
             </el-table-column>
           </el-table>
         </el-row>
+
+        <el-row v-loading="loadingMeterAbnormalData" style="margin-bottom:15px;">
+          <el-table
+            v-if="meterAbnormalData"
+            :data="meterAbnormalData.list"
+            border
+            fit
+            stripe
+            highlight-current-row
+            style="width: 100%;"
+          >
+            <el-table-column label="序号" width="62px" align="center">
+              <template slot-scope="{$index}">
+                <span>{{ $index + 1 + (meterAbnormalQuery.page - 1) * meterAbnormalQuery.size }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="地址" min-width="100px" align="center" show-overflow-tooltip>
+              <template slot-scope="{row}">
+                <span>{{ row.c_BuildingName + '号楼, ' + row.i_cell + '单元, ' + row.c_roomnum }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="户主" min-width="52px" align="center" show-overflow-tooltip>
+              <template slot-scope="{row}">
+                <span>{{ row.c_ownername }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="卡号" width="92px" align="center">
+              <template slot-scope="{row}">
+                <span>{{ row.c_cardnum }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="表号" width="90px" align="center">
+              <template slot-scope="{row}">
+                <span>{{ row.meterno }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="累计热量" min-width="90px" align="center">
+              <template slot-scope="{row}">
+                <span>{{ Math.round(row.totalHeat) }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="累计流量" min-width="90px" align="center">
+              <template slot-scope="{row}">
+                <span>{{ Math.round(row.totalFlow) }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="最后抄表时间" min-width="122px" align="center" show-overflow-tooltip>
+              <template slot-scope="{row}">
+                <span>{{ row.receiveTime | filterTimestamp }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="未抄通天数" min-width="92px" align="center">
+              <template slot-scope="{row}">
+                <span>{{ row.receiveTime | elapsedTimeFilter }}</span>
+              </template>
+            </el-table-column>
+
+          </el-table>
+          <pagination
+            v-if="meterAbnormalData"
+            v-show="meterAbnormalData.total>0"
+            :total="meterAbnormalData.total"
+            :page.sync="meterAbnormalQuery.page"
+            :limit.sync="meterAbnormalQuery.size"
+            :page-sizes="[15, 20, 30, 50, 100]"
+            :auto-scroll="false"
+            @pagination="handleMeterAbnormalFilter"
+          />
+        </el-row>
+
       </el-tab-pane>
 
       <el-tab-pane name="stastics">
@@ -171,8 +250,8 @@
 
         <el-row v-loading="loadingAbnormalList" style="margin-bottom:15px;">
           <el-table
-            v-if="abnormalList"
-            :data="abnormalList.list"
+            v-if="abnormalData"
+            :data="abnormalData.list"
             border
             fit
             highlight-current-row
@@ -180,7 +259,7 @@
           >
             <el-table-column label="序号" width="60px" align="center">
               <template slot-scope="{$index}">
-                <span>{{ $index + 1 }}</span>
+                <span>{{ $index + 1 + (abnormalQuery.page - 1)* abnormalQuery.size }}</span>
               </template>
             </el-table-column>
 
@@ -274,12 +353,13 @@
 
           </el-table>
           <pagination
-            v-if="abnormalList"
-            v-show="abnormalList.total>0"
-            :total="abnormalList.total"
-            :page.sync="listQuery.page"
-            :limit.sync="listQuery.size"
-            :page-sizes="[15, 30, 50, 100]"
+            v-if="abnormalData"
+            v-show="abnormalData.total>0"
+            :auto-scroll="false"
+            :total="abnormalData.total"
+            :page.sync="abnormalQuery.page"
+            :limit.sync="abnormalQuery.size"
+            :page-sizes="[15, 20, 30, 50, 100]"
             @pagination="handleFilter"
           />
         </el-row>
@@ -297,7 +377,8 @@ import resize from '../../dashboard/admin/components/mixins/resize'
 import { getCommunityAbnormalInfo } from '@/api/abnormalInfo'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
-const startTimestamp = new Date(new Date().setHours(0, 0, 0, 0)).getTime() - 7 * 86400000
+const theSmallHours = new Date(new Date().setHours(0, 0, 0, 0)).getTime()
+const startTimestamp = theSmallHours - 7 * 86400000
 
 export default {
   name: 'CommunityInfo',
@@ -306,6 +387,9 @@ export default {
   filters: {
     filterTimestamp(val) {
       return new Date(val + 28800000).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/')
+    },
+    elapsedTimeFilter(val) {
+      return Math.floor((theSmallHours - val) / (24 * 3600 * 1000))
     }
   },
   mixins: [resize],
@@ -326,6 +410,15 @@ export default {
       settingZoom: false,
       mapCenter: { lng: 114.3150, lat: 34.8012 },
       mapZoom: 17,
+      mapStyle: {
+        styleJson: [
+          {
+            'featureType': 'poilabel',
+            'elementType': 'labels.text.fill',
+            'stylers': {}
+          }
+        ]
+      },
 
       gatewayList: null,
       inBoundsGwList: [],
@@ -335,6 +428,16 @@ export default {
       missedMeterByMeterNo: null,
       missedMeterByMeterSummary: null,
       loadingMeterRateData: true,
+      loadingMeterAbnormalData: true,
+      meterAbnormalData: null,
+      meterAbnormalQuery: {
+        page: 1,
+        size: 15,
+        templeteId: null,
+        startDate: null,
+        endDate: null,
+        notThroughDays: 8
+      },
 
       // 故障统计相关
       pickerOptions: {
@@ -365,8 +468,8 @@ export default {
         }]
       },
       timeRange: null,
-      abnormalList: null,
-      listQuery: {
+      abnormalData: null,
+      abnormalQuery: {
         page: 1,
         size: 15,
         // sort: 'boroughId',
@@ -383,8 +486,8 @@ export default {
   watch: {
     timeRange: {
       handler: function(val) {
-        this.listQuery.startDate = val[0] ? new Date(val[0] + 28800000).toJSON().substr(0, 10).replace(/-/g, '/') + ' 07:00:00' : null
-        this.listQuery.endDate = val[1] ? new Date(val[1] + 28800000).toJSON().substr(0, 10).replace(/-/g, '/') + ' 07:00:00' : null
+        this.abnormalQuery.startDate = val[0] ? new Date(val[0] + 28800000).toJSON().substr(0, 10).replace(/-/g, '/') + ' 07:00:00' : null
+        this.abnormalQuery.endDate = val[1] ? new Date(val[1] + 28800000).toJSON().substr(0, 10).replace(/-/g, '/') + ' 07:00:00' : null
       }
     },
     communityList: {
@@ -478,7 +581,7 @@ export default {
     onMapReady({ BMap, map }) {
       this.map = map
       this.BMap = BMap
-      map.setMapStyle({ style: 'midnight' })
+      // map.setMapStyle({ style: 'midnight' })
       this.resetMap()
     },
     onMapResize() {
@@ -623,7 +726,7 @@ export default {
       this.boroughId = id
       this.missedMeterByMeterNo = null
       this.missedMeterByMeterSummary = null
-      this.abnormalList = null
+      this.abnormalData = null
 
       // 更新周边网关信息
       this.updateInBoundsGwList()
@@ -680,6 +783,10 @@ export default {
         this.loadingMeterRateData = false
       })
 
+      // 获取小区长期未抄通热表数据
+      this.handleMeterAbnormalFilter()
+
+      // 获取故障统计
       this.handleFilter()
     },
 
@@ -959,12 +1066,11 @@ export default {
     },
 
     handleFilter() {
-      console.log(this.listQuery)
       // 获取故障统计
       this.loadingAbnormalList = true
-      getCommunityAbnormalInfo(this.boroughId, this.listQuery).then(response => {
-        this.abnormalList = response.data
-        console.log(this.abnormalList)
+      getCommunityAbnormalInfo(this.boroughId, this.abnormalQuery).then(response => {
+        this.abnormalData = response.data
+        console.log(this.abnormalData)
         // Just to simulate the time of the request
         setTimeout(() => {
           this.loadingAbnormalList = false
@@ -973,6 +1079,22 @@ export default {
         this.loadingAbnormalList = false
         this.$message.error('获取小区故障列表失败，' + error)
         console.log('获取小区故障列表失败，' + error)
+      })
+    },
+    handleMeterAbnormalFilter() {
+      // 获取小区长期未抄通热表数据
+      this.loadingMeterAbnormalData = true
+      getCommunityAbnormalInfo(this.boroughId, this.meterAbnormalQuery).then(response => {
+        this.meterAbnormalData = response.data
+        console.log(this.meterAbnormalData)
+        // Just to simulate the time of the request
+        setTimeout(() => {
+          this.loadingMeterAbnormalData = false
+        }, 0.1 * 1000)
+      }).catch(error => {
+        this.loadingMeterAbnormalData = false
+        this.$message.error('获取小区长期未抄通热表数据失败，' + error)
+        console.log('获取小区长期未抄通热表数据失败，' + error)
       })
     }
   }
@@ -988,14 +1110,6 @@ export default {
 
 .anchorBL{
   display:none;
-}
-
-.BMap_scaleTxt{
-  color:lightgray !important;
-  text-align: center;
-  width: 100%;
-  cursor: default;
-  line-height: 18px;
 }
 
 </style>
