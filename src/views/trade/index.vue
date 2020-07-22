@@ -138,16 +138,16 @@
           <span>{{ $index + 1 + (query.page - 1) * query.size }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="devname" label="名称" min-width="100" align="center" show-overflow-tooltip fixed />
-      <el-table-column prop="remarks" label="描述" min-width="100" align="center" show-overflow-tooltip />
-      <el-table-column prop="dtuid" label="DTU" align="center" min-width="100" sortable="custom" />
-      <el-table-column prop="curheatnum" label="累计热量" align="center" min-width="100" sortable="custom" />
-      <el-table-column prop="curwaterflow" label="累计流量" align="center" min-width="100" sortable="custom" />
+      <el-table-column prop="devname" label="名称" min-width="102" align="center" show-overflow-tooltip fixed />
+      <el-table-column prop="remarks" label="描述" min-width="102" align="center" show-overflow-tooltip />
+      <el-table-column prop="dtuid" label="DTU" align="center" min-width="102" sortable="custom" />
+      <el-table-column prop="curheatnum" label="累计热量" align="center" min-width="102" sortable="custom" />
+      <el-table-column prop="curwaterflow" label="累计流量" align="center" min-width="102" sortable="custom" />
       <el-table-column prop="flowrate" label="流速" align="center" min-width="90" sortable="custom" />
       <el-table-column prop="heatpower" label="功率" align="center" min-width="90" sortable="custom" />
-      <el-table-column prop="supplywatertmp" label="供水温度" align="center" min-width="100" sortable="custom" />
-      <el-table-column prop="returnwatertmp" label="回水温度" align="center" min-width="100" sortable="custom" />
-      <el-table-column prop="lastupdatetime" label="抄表时间" align="center" min-width="100" :formatter="timeFormatter" sortable="custom" show-overflow-tooltip />
+      <el-table-column prop="supplywatertmp" label="供水温度" align="center" min-width="102" sortable="custom" />
+      <el-table-column prop="returnwatertmp" label="回水温度" align="center" min-width="102" sortable="custom" />
+      <el-table-column prop="lastupdatetime" label="抄表时间" align="center" min-width="102" :formatter="timeFormatter" sortable="custom" show-overflow-tooltip />
       <el-table-column prop="elapsedTime" label="抄表时间" align="center" min-width="90" :formatter="elapsedTimeFormatter" />
     </el-table>
     <pagination
