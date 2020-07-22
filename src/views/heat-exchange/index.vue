@@ -2,9 +2,8 @@
   <div class="app-container">
     <el-row class="filter-container" :gutter="10">
 
-      <el-col :xs="{span: 12}" :sm="{span: 12}" :md="{span: 5}" :lg="{span: 4}" :xl="{span: 4}">
+      <el-col :xs="{span: 8}" :sm="{span: 8}" :md="{span: 8}" :lg="{span: 4}" :xl="{span: 4}">
         <el-autocomplete
-          ref="input"
           v-model="inputDevName"
           :fetch-suggestions="devnameSuggestions"
           :select-when-unmatched="true"
@@ -18,45 +17,45 @@
         />
       </el-col>
 
-      <el-col :xs="{span: 12}" :sm="{span: 12}" :md="{span: 5}" :lg="{span: 4}" :xl="{span: 4}">
-
-        <el-autocomplete
-          ref="input"
-          v-model="inputDtuId"
-          :fetch-suggestions="dtuIdSuggestions"
-          :select-when-unmatched="true"
-          class="filter-item"
-          clearable
-          style="width:100%;"
-          placeholder="请输入DTU ID"
-          :disabled="!devlist"
-          @select="handleInputDtuId"
-          @clear="handleClearDtuId"
-        />
+      <el-col :xs="{span: 16}" :sm="{span: 16}" :md="{span: 16}" :lg="{span: 6}" :xl="{span: 8}">
+        <el-row style="margin-bottom:15px;">
+          <el-date-picker
+            v-model="timeRange"
+            type="daterange"
+            align="right"
+            unlink-panels
+            clearable
+            range-separator="~"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            :picker-options="pickerOptions"
+            style="width:100%"
+          />
+        </el-row>
       </el-col>
 
-      <el-col :xs="{span: 21}" :sm="{span: 16}" :md="{span: 10}" :lg="{span: 12}" :xl="{span: 12}">
-        <el-tooltip :content="'流速: ' + (flowRateFilter.range[0] === undefined ? '' : flowRateFilter.range[0]) + '~' + (flowRateFilter.range[1] === undefined ? '' : flowRateFilter.range[1]) " placement="top">
+      <el-col :xs="{span: 20}" :sm="{span: 20}" :md="{span: 20}" :lg="{span: 10}" :xl="{span: 8}">
+        <el-tooltip :content="'流量: ' + (flowFilter.range[0] === undefined ? '' : flowFilter.range[0]) + '~' + (flowFilter.range[1] === undefined ? '' : flowFilter.range[1]) " placement="top">
           <el-dropdown
             split-button
-            :type="flowRateFilter.switch ? 'primary' : 'info'"
+            :type="flowFilter.switch ? 'primary' : 'info'"
             class="filter-item"
             style="margin-right:10px;"
             trigger="click"
-            @click="function() {flowRateFilter.switch = !flowRateFilter.switch}"
+            @click="function() {flowFilter.switch = !flowFilter.switch}"
           >
-            流速
+            流量
             <el-dropdown-menu slot="dropdown">
               <span style="margin:10px">
-                <el-input-number v-model="flowRateFilter.range[0]" :disabled="!flowRateFilter.switch" controls-position="right" /> ~
-                <el-input-number v-model="flowRateFilter.range[1]" :disabled="!flowRateFilter.switch" controls-position="right" />
+                <el-input-number v-model="flowFilter.range[0]" :disabled="!flowFilter.switch" controls-position="right" /> ~
+                <el-input-number v-model="flowFilter.range[1]" :disabled="!flowFilter.switch" controls-position="right" />
               </span>
-              <el-switch v-model="flowRateFilter.switch" class="filter-item" style="margin-right:40px;" active-color="#13ce66" inactive-color="#ff4949" />
+              <el-switch v-model="flowFilter.switch" class="filter-item" style="margin-right:40px;" active-color="#13ce66" inactive-color="#ff4949" />
             </el-dropdown-menu>
           </el-dropdown>
         </el-tooltip>
 
-        <el-tooltip :content="'功率: ' + (powerFilter.range[0] === undefined ? '' : powerFilter.range[0]) + '~' + (powerFilter.range[1] === undefined ? '' : powerFilter.range[1]) " placement="top">
+        <el-tooltip :content="'热量: ' + (powerFilter.range[0] === undefined ? '' : powerFilter.range[0]) + '~' + (powerFilter.range[1] === undefined ? '' : powerFilter.range[1]) " placement="top">
           <el-dropdown
             split-button
             :type="powerFilter.switch ? 'primary' : 'info'"
@@ -65,13 +64,36 @@
             trigger="click"
             @click="function() {powerFilter.switch = !powerFilter.switch}"
           >
-            功率
+            热量
             <el-dropdown-menu slot="dropdown">
               <span style="margin:10px">
                 <el-input-number v-model="powerFilter.range[0]" :disabled="!powerFilter.switch" controls-position="right" /> ~
                 <el-input-number v-model="powerFilter.range[1]" :disabled="!powerFilter.switch" controls-position="right" />
               </span>
               <el-switch v-model="powerFilter.switch" class="filter-item" style="margin-right:40px;" active-color="#13ce66" inactive-color="#ff4949" />
+            </el-dropdown-menu>
+          </el-dropdown>
+        </el-tooltip>
+
+        <el-tooltip :content="pressureFilter.type + ': ' + (pressureFilter.range[0] === undefined ? '' : pressureFilter.range[0]) + '~' + (pressureFilter.range[1] === undefined ? '' : pressureFilter.range[1]) " placement="top">
+          <el-dropdown
+            split-button
+            :type="pressureFilter.switch ? 'primary' : 'info'"
+            class="filter-item"
+            style="margin-right:10px;"
+            trigger="click"
+            @click="function() {pressureFilter.switch = !pressureFilter.switch}"
+          >
+            压力
+            <el-dropdown-menu slot="dropdown">
+              <span style="margin:10px">
+                <el-radio v-model="pressureFilter.type" :disabled="!pressureFilter.switch" label="供水压力">供水</el-radio>
+                <el-radio v-model="pressureFilter.type" :disabled="!pressureFilter.switch" label="回水压力">回水</el-radio>
+                <el-radio v-model="pressureFilter.type" :disabled="!pressureFilter.switch" label="压差">压差</el-radio>
+                <el-input-number v-model="pressureFilter.range[0]" :disabled="!pressureFilter.switch" controls-position="right" /> ~
+                <el-input-number v-model="pressureFilter.range[1]" :disabled="!pressureFilter.switch" controls-position="Wright" />
+              </span>
+              <el-switch v-model="pressureFilter.switch" class="filter-item" style="margin-right:40px;" active-color="#13ce66" inactive-color="#ff4949" />
             </el-dropdown-menu>
           </el-dropdown>
         </el-tooltip>
@@ -99,7 +121,7 @@
         </el-tooltip>
       </el-col>
 
-      <el-col :xs="{span: 3}" :sm="{span: 8}" :md="{span: 4}" :lg="{span: 4}" :xl="{span: 4}" align="right">
+      <el-col :xs="{span: 4}" :sm="{span: 4}" :md="{span: 4}" :lg="{span: 4}" :xl="{span: 4}" align="right">
         <el-button
           type="warning"
           icon="el-icon-refresh"
@@ -138,16 +160,17 @@
           <span>{{ $index + 1 + (query.page - 1) * query.size }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="devname" label="名称" min-width="100" align="center" show-overflow-tooltip fixed />
-      <el-table-column prop="remarks" label="描述" min-width="100" align="center" show-overflow-tooltip />
-      <el-table-column prop="dtuid" label="DTU" align="center" min-width="100" sortable="custom" />
-      <el-table-column prop="curheatnum" label="累计热量" align="center" min-width="100" sortable="custom" />
-      <el-table-column prop="curwaterflow" label="累计流量" align="center" min-width="100" sortable="custom" />
-      <el-table-column prop="flowrate" label="流速" align="center" min-width="90" sortable="custom" />
-      <el-table-column prop="heatpower" label="功率" align="center" min-width="90" sortable="custom" />
-      <el-table-column prop="supplywatertmp" label="供水温度" align="center" min-width="100" sortable="custom" />
-      <el-table-column prop="returnwatertmp" label="回水温度" align="center" min-width="100" sortable="custom" />
-      <el-table-column prop="lastupdatetime" label="抄表时间" align="center" min-width="100" :formatter="timeFormatter" sortable="custom" show-overflow-tooltip />
+      <el-table-column prop="devname" label="名称" min-width="102" align="center" show-overflow-tooltip fixed />
+      <!-- <el-table-column prop="remarks" label="描述" min-width="102" align="center" show-overflow-tooltip /> -->
+      <el-table-column prop="rl_Sum" label="累计热量" align="center" min-width="102" sortable="custom" />
+      <el-table-column prop="fi_Sum" label="累计热量" align="center" min-width="102" sortable="custom" />
+      <el-table-column prop="rl" label="瞬时热量" align="center" min-width="102" sortable="custom" />
+      <el-table-column prop="fi" label="瞬时流量" align="center" min-width="102" sortable="custom" />
+      <el-table-column prop="pgs1" label="供水压力" align="center" min-width="102" sortable="custom" />
+      <el-table-column prop="phs1" label="回水压力" align="center" min-width="102" sortable="custom" />
+      <el-table-column prop="tgs1" label="供水温度" align="center" min-width="102" sortable="custom" />
+      <el-table-column prop="ths1" label="回水温度" align="center" min-width="102" sortable="custom" />
+      <el-table-column prop="synctime" label="抄表时间" align="center" min-width="102" :formatter="timeFormatter" sortable="custom" show-overflow-tooltip />
       <el-table-column prop="elapsedTime" label="抄表时间" align="center" min-width="90" :formatter="elapsedTimeFormatter" />
     </el-table>
     <pagination
@@ -164,7 +187,7 @@
 </template>
 
 <script>
-import { getDevList } from '@/api/tradeSysInfo'
+import { getDevList, getDevHisData } from '@/api/heatExchangeStationInfo'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 const theSmallHours = new Date(new Date().setHours(0, 0, 0, 0)).getTime()
@@ -188,7 +211,7 @@ export default {
         size: 12
       },
 
-      flowRateFilter: {
+      flowFilter: {
         switch: false,
         range: [undefined, undefined]
       },
@@ -198,36 +221,73 @@ export default {
         range: [undefined, undefined]
       },
 
+      pressureFilter: {
+        switch: false,
+        type: '供水压力',
+        range: [undefined, undefined]
+      },
+
       tempFilter: {
         switch: false,
         type: '供水温度',
         range: [undefined, undefined]
       },
 
+      timeRange: null,
+
       filter: {
         devname: '',
-        dtuid: '',
-        endBackupTime: '',
-        endCurHeatnum: '',
-        endCurwaterflow: '',
-        endFlowrate: '',
-        endHeatpower: '',
-        endReturnwatertmp: '',
-        endSupplywatertmp: '',
+        gtFi: '',
+        gtFiSum: '',
+        gtPgs1: '',
+        gtPhs1: '',
+        gtRl: '',
+        gtRlSum: '',
+        gtSyncTime: '',
+        gtTgs1: '',
+        gtThs1: '',
+        ltFi: '',
+        ltFiSum: '',
+        ltPgs1: '',
+        ltPhs1: '',
+        ltRl: '',
+        ltRlSum: '',
+        ltSyncTime: '',
+        ltTgs1: '',
+        ltThs1: '',
         orderColumn: '',
-        orderRule: '', // 1:降序，0：升序
-        startBackupTime: '',
-        startCurHeatnum: '',
-        startCurwaterflow: '',
-        startFlowrate: '',
-        startHeatpower: '',
-        startReturnwatertmp: '',
-        startSupplywatertmp: '',
-        startWdc: '',
-        endWdc: ''
+        orderRule: ''
       },
 
-      downloadLoading: false
+      downloadLoading: false,
+
+      pickerOptions: {
+        shortcuts: [{
+          text: '最近1天',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 1)
+            picker.$emit('pick', [start, end])
+          }
+        }, {
+          text: '最近7天',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+            picker.$emit('pick', [start, end])
+          }
+        }, {
+          text: '最近30天',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
+            picker.$emit('pick', [start, end])
+          }
+        }]
+      }
     }
   },
   computed: {
@@ -236,30 +296,17 @@ export default {
     }
   },
   watch: {
-    tempFilter: {
-      deep: true,
-      handler(val) {
-        [this.filter.startSupplywatertmp, this.filter.endSupplywatertmp, this.filter.startReturnwatertmp, this.filter.endReturnwatertmp, this.filter.startWdc, this.filter.endWdc] =
-           ['', '', '', '', '', '']
-        if (!val.switch) {
-          return
-        }
-
-        var range = [typeof val.range[0] !== 'number' ? '' : val.range[0].toString(), typeof val.range[1] !== 'number' ? '' : val.range[1].toString()]
-        if (val.type === '供水') {
-          [this.filter.startSupplywatertmp, this.filter.endSupplywatertmp] = range
-        } else if (val.type === '回水') {
-          [this.filter.startReturnwatertmp, this.filter.endReturnwatertmp] = range
-        } else {
-          [this.filter.startWdc, this.filter.endWdc] = range
-        }
+    timeRange: {
+      handler: function(val) {
+        this.filter.ltSyncTime = (val && val[0]) ? new Date(val[0] + 28800000).toJSON().substr(0, 10).replace(/-/g, '/') + ' 07:00:00' : ''
+        this.filter.gtSyncTime = (val && val[1]) ? new Date(val[1] + 28800000).toJSON().substr(0, 10).replace(/-/g, '/') + ' 07:00:00' : ''
       }
     },
 
-    flowRateFilter: {
+    flowFilter: {
       deep: true,
       handler(val) {
-        [this.filter.startFlowrate, this.filter.endFlowrate] = val.switch
+        [this.filter.ltFi, this.filter.gtFi] = val.switch
           ? [typeof val.range[0] !== 'number' ? '' : val.range[0].toString(),
             typeof val.range[1] !== 'number' ? '' : val.range[1].toString()]
           : ['', '']
@@ -269,10 +316,48 @@ export default {
     powerFilter: {
       deep: true,
       handler(val) {
-        [this.filter.startHeatpower, this.filter.endHeatpower] = val.switch
+        [this.filter.ltRl, this.filter.gtRl] = val.switch
           ? [typeof val.range[0] !== 'number' ? '' : val.range[0].toString(),
             typeof val.range[1] !== 'number' ? '' : val.range[1].toString()]
           : ['', '']
+      }
+    },
+
+    pressureFilter: {
+      deep: true,
+      handler(val) {
+        [this.filter.ltPgs1, this.filter.gtPgs1, this.filter.ltPhs1, this.filter.gtPhs1, this.filter.ltPc1, this.filter.gtPc1] = ['', '', '', '', '', '']
+        if (!val.switch) {
+          return
+        }
+
+        var range = [typeof val.range[0] !== 'number' ? '' : val.range[0].toString(), typeof val.range[1] !== 'number' ? '' : val.range[1].toString()]
+        if (val.type === '供水压力') {
+          [this.filter.ltPgs1, this.filter.gtPgs1] = range
+        } else if (val.type === '回水压力') {
+          [this.filter.ltPhs1, this.filter.gtPhs1] = range
+        } else {
+          [this.filter.ltPhs1, this.filter.gtPhs1] = range // TODO
+        }
+      }
+    },
+
+    tempFilter: {
+      deep: true,
+      handler(val) {
+        [this.filter.ltTgs1, this.filter.gtTgs1, this.filter.ltThs1, this.filter.gtThs1, this.filter.ltThs1, this.filter.gtThs1] = ['', '', '', '', '', '']
+        if (!val.switch) {
+          return
+        }
+
+        var range = [typeof val.range[0] !== 'number' ? '' : val.range[0].toString(), typeof val.range[1] !== 'number' ? '' : val.range[1].toString()]
+        if (val.type === '供水温度') {
+          [this.filter.ltTgs1, this.filter.gtTgs1] = range
+        } else if (val.type === '回水温度') {
+          [this.filter.ltThs1, this.filter.gtThs1] = range
+        } else {
+          [this.filter.ltThs1, this.filter.gtThs1] = range // TODO
+        }
       }
     },
 
@@ -296,7 +381,7 @@ export default {
             this.tableData = response.data.list.slice(0, this.query.size)
             this.total = response.data.total
             this.devlist = response.data.list.map((v, i) => {
-              return { id: i, devname: v.devname, dtuid: v.dtuid }
+              return { id: i, devname: v.devname }
             })
             this.loading = false
             resolve()
@@ -310,12 +395,12 @@ export default {
 
     // 时间戳转日期，格式2020/08/08 22:11:59
     timeFormatter(row, column) {
-      return new Date(row.lastupdatetime + 28800000).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/')
+      return new Date(row.synctime + 28800000).toJSON().substr(0, 19).replace('T', ' ').replace(/-/g, '/')
     },
 
     // 计算未上线天数
     elapsedTimeFormatter(row, column) {
-      return Math.floor((theSmallHours - row.lastupdatetime) / (24 * 3600 * 1000)) + '天'
+      return Math.floor((theSmallHours - row.synctime) / (24 * 3600 * 1000)) + '天'
     },
 
     // 按条件筛选数据
@@ -327,7 +412,7 @@ export default {
       this.loading = true
       setTimeout(() => {
         return new Promise((resolve, reject) => {
-          getDevList(this.query, this.filter).then(response => {
+          getDevHisData(this.query, this.filter).then(response => {
             console.log(response)
             this.tableData = response.data.list
             this.total = response.data.total
@@ -366,31 +451,6 @@ export default {
       this.inputDevName = item.value
     },
 
-    // dtuid模糊搜索
-    dtuIdSuggestions(queryString, callback) {
-      if (typeof queryString !== 'string') {
-        queryString = ''
-      } else {
-        queryString = queryString.trim()
-      }
-
-      var suggestions = []
-      for (var i = 0; i < this.devlist.length; i++) {
-        if (this.devlist[i].dtuid.indexOf(queryString) >= 0) {
-          suggestions.push({ id: this.devlist[i].id, value: this.devlist[i].dtuid })
-        }
-      }
-      callback(suggestions)
-    },
-    handleClearDtuId() {
-      this.filter.dtuid = ''
-      this.inputDtuId = ''
-    },
-    handleInputDtuId(item) {
-      this.filter.dtuid = item.value
-      this.inputDtuId = item.value
-    },
-
     sortChange(data) {
       const { prop, order } = data
       this.filter.orderColumn = (order === null ? '' : prop)
@@ -400,47 +460,49 @@ export default {
 
     // 重置搜索条件
     handleReset() {
-      this.handleClearDtuId()
       this.handleClearDevName()
 
-      this.flowRateFilter.switch = false
+      this.flowFilter.switch = false
       this.powerFilter.switch = false
+      this.pressureFilter.switch = false
       this.tempFilter.switch = false
 
       this.filter.orderColumn = ''
       this.filter.orderRule = ''
+      this.timeRange = null
     },
 
     // 导出数据
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['序号', '名称', '描述', 'DTU ID', '累计热量', '累计流量', '流速', '功率', '供水温度', '回水温度', '更新时间']
+        const tHeader = ['序号', '名称', '累计热量', '累计流量', '瞬时热量', '瞬时流量', '供水压力', '回水压力', '供水温度', '回水温度', '抄表时间']
 
         getDevList({ page: 0, size: 0 }, this.filter).then(response => {
           const data = response.data.list.map((v, i) => {
             return [i + 1,
               v.devname,
-              v.remarks,
-              v.dtuid,
-              v.curheatnum,
-              v.curwaterflow,
-              v.flowrate,
-              v.heatpower,
-              v.supplywatertmp,
-              v.returnwatertmp,
+              // v.remarks,
+              v.rl_Sum,
+              v.fi_Sum,
+              v.rl,
+              v.fi,
+              v.pgs1,
+              v.phs1,
+              v.tgs1,
+              v.ths1,
               this.timeFormatter(v)]
           })
           excel.export_json_to_excel({
             header: tHeader,
             data,
-            filename: '贸易系统实时数据 ' + new Date().toJSON().substr(0, 19).replace('T', '_')
+            filename: '热力站数据 ' + new Date().toJSON().substr(0, 19).replace('T', '_')
           })
           this.downloadLoading = false
         }).catch(error => {
           this.downloadLoading = false
-          this.$message.error('导出贸易系统数据失败' + error)
-          console.log('导出贸易系统数据失败' + error)
+          this.$message.error('导出热力站数据失败' + error)
+          console.log('导出热力站数据失败' + error)
         })
       })
     }

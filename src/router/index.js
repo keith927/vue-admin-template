@@ -63,9 +63,9 @@ export const constantRoutes = [
     meta: { title: '集成数据', icon: 'el-icon-s-help' },
     children: [
       {
-        path: 'power-exchange',
+        path: 'heat-exchange',
         name: 'Power-exchange',
-        component: () => import('@/views/power-exchange/index'),
+        component: () => import('@/views/heat-exchange/index'),
         meta: { title: '换热站', icon: 'table' }
       },
       {

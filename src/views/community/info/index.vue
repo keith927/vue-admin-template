@@ -486,8 +486,8 @@ export default {
   watch: {
     timeRange: {
       handler: function(val) {
-        this.abnormalQuery.startDate = val[0] ? new Date(val[0] + 28800000).toJSON().substr(0, 10).replace(/-/g, '/') + ' 07:00:00' : null
-        this.abnormalQuery.endDate = val[1] ? new Date(val[1] + 28800000).toJSON().substr(0, 10).replace(/-/g, '/') + ' 07:00:00' : null
+        this.abnormalQuery.startDate = (val && val[0]) ? new Date(val[0] + 28800000).toJSON().substr(0, 10).replace(/-/g, '/') + ' 07:00:00' : null
+        this.abnormalQuery.endDate = (val && val[1]) ? new Date(val[1] + 28800000).toJSON().substr(0, 10).replace(/-/g, '/') + ' 07:00:00' : null
       }
     },
     communityList: {
