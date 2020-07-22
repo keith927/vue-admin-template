@@ -139,7 +139,7 @@
         </template>
       </el-table-column>
       <el-table-column prop="devname" label="名称" min-width="100" align="center" show-overflow-tooltip fixed />
-      <el-table-column prop="devname" label="描述" min-width="100" align="center" show-overflow-tooltip />
+      <el-table-column prop="remarks" label="描述" min-width="100" align="center" show-overflow-tooltip />
       <el-table-column prop="dtuid" label="DTU" align="center" min-width="100" sortable="custom" />
       <el-table-column prop="curheatnum" label="累计热量" align="center" min-width="100" sortable="custom" />
       <el-table-column prop="curwaterflow" label="累计流量" align="center" min-width="100" sortable="custom" />
@@ -418,12 +418,13 @@ export default {
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['序号', '名称', 'DTU ID', '累计热量', '累计流量', '流速', '功率', '供水温度', '回水温度', '更新时间']
+        const tHeader = ['序号', '名称', '描述', 'DTU ID', '累计热量', '累计流量', '流速', '功率', '供水温度', '回水温度', '更新时间']
 
         getDevList({ page: 0, size: 0 }, this.filter).then(response => {
           const data = response.data.list.map((v, i) => {
             return [i + 1,
               v.devname,
+              v.remarks,
               v.dtuid,
               v.curheatnum,
               v.curwaterflow,

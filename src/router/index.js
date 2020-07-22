@@ -72,7 +72,7 @@ export const constantRoutes = [
         path: 'trade',
         name: 'Trade',
         component: () => import('@/views/trade/index'),
-        meta: { title: '贸易', icon: 'table' }
+        meta: { title: '贸易系统', icon: 'table' }
       },
       {
         path: 'community',
