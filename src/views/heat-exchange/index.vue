@@ -91,7 +91,7 @@
                 <el-radio v-model="pressureFilter.type" :disabled="!pressureFilter.switch" label="回水压力">回水</el-radio>
                 <el-radio v-model="pressureFilter.type" :disabled="!pressureFilter.switch" label="压差">压差</el-radio>
                 <el-input-number v-model="pressureFilter.range[0]" :disabled="!pressureFilter.switch" controls-position="right" /> ~
-                <el-input-number v-model="pressureFilter.range[1]" :disabled="!pressureFilter.switch" controls-position="Wright" />
+                <el-input-number v-model="pressureFilter.range[1]" :disabled="!pressureFilter.switch" controls-position="right" />
               </span>
               <el-switch v-model="pressureFilter.switch" class="filter-item" style="margin-right:40px;" active-color="#13ce66" inactive-color="#ff4949" />
             </el-dropdown-menu>
@@ -113,7 +113,7 @@
                 <el-radio v-model="tempFilter.type" :disabled="!tempFilter.switch" label="回水温度">回水</el-radio>
                 <el-radio v-model="tempFilter.type" :disabled="!tempFilter.switch" label="温差">温差</el-radio>
                 <el-input-number v-model="tempFilter.range[0]" :disabled="!tempFilter.switch" controls-position="right" :min="-100" :max="100" /> ~
-                <el-input-number v-model="tempFilter.range[1]" :disabled="!tempFilter.switch" controls-position="Wright" :min="-100" :max="100" />
+                <el-input-number v-model="tempFilter.range[1]" :disabled="!tempFilter.switch" controls-position="right" :min="-100" :max="100" />
               </span>
               <el-switch v-model="tempFilter.switch" class="filter-item" style="margin-right:40px;" active-color="#13ce66" inactive-color="#ff4949" />
             </el-dropdown-menu>
