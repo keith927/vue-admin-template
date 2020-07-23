@@ -66,7 +66,7 @@ export const constantRoutes = [
         path: 'heat-exchange',
         name: 'Power-exchange',
         component: () => import('@/views/heat-exchange/index'),
-        meta: { title: '换热站', icon: 'table' }
+        meta: { title: '换热站', icon: 'heat-exchange' }
       },
       {
         path: 'trade',
@@ -79,7 +79,7 @@ export const constantRoutes = [
         name: 'Community',
         redirect: '/data/community/summary',
         component: () => import('@/views/community/index'),
-        meta: { title: '小区', icon: 'table' },
+        meta: { title: '小区', icon: 'community' },
         children: [
           {
             path: 'summary',
@@ -94,89 +94,71 @@ export const constantRoutes = [
             meta: { title: '小区详情', icon: 'table' }
           }
         ]
-      }
-    ]
-  },
-
-  {
-    path: '/form',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'Form',
-        component: () => import('@/views/form/index'),
-        meta: { title: 'Form', icon: 'form' }
-      }
-    ]
-  },
-
-  {
-    path: '/nested',
-    component: Layout,
-    redirect: '/nested/menu1',
-    name: 'Nested',
-    meta: {
-      title: 'Nested',
-      icon: 'nested'
-    },
-    children: [
-      {
-        path: 'menu1',
-        component: () => import('@/views/nested/menu1/index'), // Parent router-view
-        name: 'Menu1',
-        meta: { title: 'Menu1' },
-        children: [
-          {
-            path: 'menu1-1',
-            component: () => import('@/views/nested/menu1/menu1-1'),
-            name: 'Menu1-1',
-            meta: { title: 'Menu1-1' }
-          },
-          {
-            path: 'menu1-2',
-            component: () => import('@/views/nested/menu1/menu1-2'),
-            name: 'Menu1-2',
-            meta: { title: 'Menu1-2' },
-            children: [
-              {
-                path: 'menu1-2-1',
-                component: () => import('@/views/nested/menu1/menu1-2/menu1-2-1'),
-                name: 'Menu1-2-1',
-                meta: { title: 'Menu1-2-1' }
-              },
-              {
-                path: 'menu1-2-2',
-                component: () => import('@/views/nested/menu1/menu1-2/menu1-2-2'),
-                name: 'Menu1-2-2',
-                meta: { title: 'Menu1-2-2' }
-              }
-            ]
-          },
-          {
-            path: 'menu1-3',
-            component: () => import('@/views/nested/menu1/menu1-3'),
-            name: 'Menu1-3',
-            meta: { title: 'Menu1-3' }
-          }
-        ]
       },
       {
-        path: 'menu2',
-        component: () => import('@/views/nested/menu2/index'),
-        name: 'Menu2',
-        meta: { title: 'menu2' }
+        path: '/user',
+        name: 'User',
+        redirect: '/data/user/summary',
+        component: () => import('@/views/user/index'),
+        meta: { title: '用户', icon: 'user' },
+        children: [
+          {
+            path: 'summary',
+            name: 'Summary',
+            component: () => import('@/views/user/list/index'),
+            meta: { title: '用户概览', icon: 'table' }
+          },
+          {
+            path: 'info',
+            name: 'Info',
+            component: () => import('@/views/user/info/index'),
+            meta: { title: '用户详情', icon: 'table' }
+          }
+        ]
       }
     ]
   },
 
   {
-    path: 'external-link',
+    path: '/analyze',
     component: Layout,
+    redirect: '/data/analyze/abnormal',
+    name: 'Analyze',
+    meta: { title: '数据分析', icon: 'chart' },
     children: [
       {
-        path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
-        meta: { title: 'External Link', icon: 'link' }
+        path: 'abnormal',
+        name: 'Abnormal',
+        component: () => import('@/views/abnormal/index'),
+        meta: { title: '故障统计', icon: 'table' }
+      },
+      {
+        path: 'leakage',
+        name: 'Leakage',
+        component: () => import('@/views/leakage/index'),
+        meta: { title: '漏损分析', icon: 'table' }
+      },
+      {
+        path: 'publish',
+        name: 'Publish',
+        component: () => import('@/views/publish/index'),
+        meta: { title: '数据发布', icon: 'table' }
+      }
+    ]
+  },
+
+  {
+    path: '/settings',
+    component: Layout,
+    redirect: '/settings/rights',
+    name: 'Settings',
+    meta: { title: '系统设置', icon: 'nested' },
+    children: [
+      {
+        path: 'rights',
+        component: () => import('@/views/rights/index'),
+        name: 'Rights',
+        meta: { title: '权限管理' }
       }
     ]
   },
