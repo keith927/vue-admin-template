@@ -1,63 +1,92 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
-      <el-row style="margin-bottom:15px;">
-        <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 19}" :lg="{span: 19}" :xl="{span: 19}">
-          <el-autocomplete
-            ref="input"
-            v-model="listQuery.inputName"
-            :fetch-suggestions="nameSuggestions"
-            :select-when-unmatched="true"
-            class="filter-item"
-            clearable
-            placeholder="请输入小区名"
-            style="margin-right:30px;"
-            @select="handleInputName"
-            @clear="handleClearName"
-          />
 
-          <div class="filter-item" style="margin-right:30px;">
-            <div style="display:flex;flex:1;font-size:14px;color:#606266;">
-              <span style="margin-right:15px;line-height:40px">7日抄通率:</span>
-              <el-slider
-                v-model="listQuery.meterRateRange"
-                style="width:160px"
-                range
-              />
-            </div>
-          </div>
+    <el-row class="filter-container" :gutter="10">
 
-          <el-switch
-            v-model="showMissedMeterNum"
-            class="filter-item"
-            style="margin-right:30px;"
-            inactive-color="#13ce66"
-            active-color="#ff4949"
-            inactive-text="抄通"
-            active-text="未抄通"
-            @change="tableKey=tableKey+1"
-          />
+      <el-col :xs="{span: 24}" :sm="{span: 5}" :md="{span: 5}" :lg="{span: 4}" :xl="{span: 4}">
+        <el-autocomplete
+          v-model="listQuery.inputName"
+          :fetch-suggestions="nameSuggestions"
+          :select-when-unmatched="true"
+          class="filter-item"
+          clearable
+          style="width:100%;"
+          placeholder="请输入小区名"
+          :disabled="!communities"
+          @select="handleInputName"
+          @clear="handleClearName"
+        />
+      </el-col>
 
-          <el-checkbox v-model="showPrecent" class="filter-item" style="margin-right:30px;" @change="tableKey=tableKey+1">
-            显示百分比
-          </el-checkbox>
+      <el-col :xs="{span: 20}" :sm="{span: 15}" :md="{span: 15}" :lg="{span: 16}" :xl="{span: 16}">
+        <!-- <el-tooltip :content="'近7日抄通率: ' + (flowFilter.range[0] === undefined ? '' : flowFilter.range[0]) + '~' + (flowFilter.range[1] === undefined ? '' : flowFilter.range[1]) " placement="top"> -->
+        <el-dropdown
+          split-button
+          :type="(listQuery.meterRateRange[0] === 0 && listQuery.meterRateRange[1] === 100) ? 'info' : 'primary'"
+          class="filter-item"
+          style="margin-right:10px;"
+          trigger="click"
+        >
+          抄通率
+          <el-dropdown-menu slot="dropdown" style="padding: 0 10px 0 10px;">
+            <el-row>
+              <el-radio v-model="meterRateFilterType" label="range">自定义</el-radio>
+              <el-radio v-model="meterRateFilterType" label="<80%">&lt;80%</el-radio>
+              <el-radio v-model="meterRateFilterType" label="<90%">&lt;90%</el-radio>
+              <el-radio v-model="meterRateFilterType" label=">97%">&gt;97%</el-radio>
+              <el-radio v-model="meterRateFilterType" label="=100%">=100%</el-radio>
+            </el-row>
+            <el-row>
+              <el-slider v-model="listQuery.meterRateRange" :disabled="meterRateFilterType !== 'range'" style="width:100%" range />
+            </el-row>
+          </el-dropdown-menu>
+        </el-dropdown>
+        <!-- </el-tooltip> -->
 
-          <el-checkbox v-model="showMeterRateHis" class="filter-item" style="margin-right:30px;" @change="tableKey=tableKey+1">
-            显示每日抄通率
-          </el-checkbox>
+        <!-- <el-tooltip :content="'近7日抄通率: ' + (flowFilter.range[0] === undefined ? '' : flowFilter.range[0]) + '~' + (flowFilter.range[1] === undefined ? '' : flowFilter.range[1]) " placement="top"> -->
+        <el-dropdown
+          split-button
+          :type="( !showMissedMeterNum && !showMeterRateHis && !showDescription && showPrecent ) ? 'info' : 'primary'"
+          class="filter-item"
+          style="margin-right:10px;"
+          trigger="click"
+        >
+          显示内容
+          <el-dropdown-menu slot="dropdown">
+            <span style="margin:10px">
+              <el-checkbox v-model="showPrecent" class="filter-item">显示百分比</el-checkbox>
+              <el-checkbox v-model="showMissedMeterNum" class="filter-item">显示未抄通</el-checkbox>
+              <el-checkbox v-model="showMeterRateHis" class="filter-item">显示每日抄通率</el-checkbox>
+              <el-checkbox v-model="showDescription" class="filter-item">显示备注</el-checkbox>
+            </span>
+          </el-dropdown-menu>
+        </el-dropdown>
+        <!-- </el-tooltip> -->
 
-          <el-checkbox v-model="showDescription" class="filter-item" style="margin-right:30px;" @change="tableKey=tableKey+1">
-            显示备注
-          </el-checkbox>
-        </el-col>
+      </el-col>
 
-        <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 5}" :lg="{span: 5}" :xl="{span: 5}" align="right">
-          <el-button v-waves type="warning" icon="el-icon-refresh" @click="handleReset">重置</el-button>
-          <el-button v-waves :loading="downloadLoading" type="primary" icon="el-icon-download" @click="handleDownload">导出</el-button>
-        </el-col>
+      <el-col :xs="{span: 4}" :sm="{span: 4}" :md="{span: 4}" :lg="{span: 4}" :xl="{span: 4}" align="right">
+        <el-button
+          type="warning"
+          icon="el-icon-refresh"
+          style="margin-bottom:15px"
+          circle
+          @click="handleReset"
+        />
 
-      </el-row>
-    </div>
+        <el-button
+          v-if="device!=='mobile'"
+          :loading="downloadLoading"
+          :disabled="!communities"
+          type="primary"
+          icon="el-icon-download"
+          style="margin-bottom:15px"
+          circle
+          @click="handleDownload"
+        />
+      </el-col>
+
+    </el-row>
 
     <el-table
       :key="tableKey"
@@ -72,7 +101,7 @@
       :summary-method="getSummaries"
       @sort-change="sortChange"
     >
-      <el-table-column label="序号" min-width="80px" prop="boroughId" sortable="custom" align="center">
+      <el-table-column label="ID" min-width="80px" prop="boroughId" sortable="custom" align="center">
         <template slot-scope="{row}">
           <span>{{ row.boroughId }}</span>
         </template>
@@ -123,7 +152,7 @@
             <el-progress
               v-else
               :text-inside="true"
-              :stroke-width="20"
+              :stroke-width="16"
               :percentage="showMissedMeterNum ? (1 - row.throughRateHis[dindex]) : row.throughRateHis[dindex] | rateFilter "
               :status=" row.throughRateHis[dindex] | rateStatusFilter "
             />
@@ -140,11 +169,11 @@
     </el-table>
 
     <pagination
-      v-show="total>0"
+      v-show="total > 0"
       :total="total"
       :page.sync="listQuery.page"
       :limit.sync="listQuery.limit"
-      :page-sizes="[15, 50, 100, 300]"
+      :page-sizes="[12, 30, 50, 100, 200]"
     />
 
   </div>
@@ -194,7 +223,7 @@ export default {
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 15,
+        limit: 12,
         sort: 'boroughId',
         order: 'ascending',
         inputName: '',
@@ -208,7 +237,13 @@ export default {
       showPrecent: true,
       showDescription: false,
       lableSuffix: '抄通',
-      communitySummary: null
+      communitySummary: null,
+      meterRateFilterType: 'range'
+    }
+  },
+  computed: {
+    device() {
+      return this.$store.state.app.device
     }
   },
   watch: {
@@ -221,6 +256,31 @@ export default {
       deep: true,
       handler(val) {
         this.handleFilter()
+      }
+    },
+    meterRateFilterType: {
+      handler(val) {
+        console.log(val)
+        switch (val) {
+          case '=100%':
+            this.listQuery.meterRateRange = [100, 100]
+            break
+          case '>97%':
+            this.listQuery.meterRateRange = [97, 100]
+            break
+          case '<97%':
+            this.listQuery.meterRateRange = [0, 97]
+            break
+          case '<90%':
+            this.listQuery.meterRateRange = [0, 90]
+            break
+          case '<80%':
+            this.listQuery.meterRateRange = [0, 80]
+            break
+          case 'range':
+            this.listQuery.meterRateRange = [0, 100]
+            break
+        }
       }
     }
   },
@@ -336,7 +396,7 @@ export default {
     handleReset() {
       this.listQuery = {
         page: 1,
-        limit: 15,
+        limit: 12,
         sort: 'boroughId',
         order: 'ascending',
         inputName: '',
